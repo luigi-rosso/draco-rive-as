@@ -1,0 +1,8 @@
+build/
+verify/vectors/
+verify/*.wasm
+verify/cppref/*.tmp
+verify/cppref/ref
+verify/cppref/ref2
+verify/cppref/ref3
+verify/cppref/ref4
