@@ -31,7 +31,7 @@ function extract(att: PointAttribute | null, numPoints: i32): Float32Array | nul
 
 // Decodes a Draco mesh bitstream (a .drc file's bytes, or the buffer from a
 // glTF KHR_draco_mesh_compression bufferView).
-export function decode(data: ArrayBuffer): DracoMesh {
+export unsafe function decode(data: ArrayBuffer): DracoMesh {
     let out = new DracoMesh();
 
     let db = new DecoderBuffer();

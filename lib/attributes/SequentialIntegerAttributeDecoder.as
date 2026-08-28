@@ -59,7 +59,7 @@ export class SequentialIntegerAttributeDecoder extends SequentialAttributeDecode
         return this.decodeIntegerValues(pointIds, buffer);
     }
 
-    protected decodeIntegerValues(pointIds: Int32Array, buffer: DecoderBuffer): bool {
+    protected unsafe decodeIntegerValues(pointIds: Int32Array, buffer: DecoderBuffer): bool {
         let numComponents = this.getNumValueComponents();
         if (numComponents <= 0) {
             return false;
@@ -170,7 +170,7 @@ export class SequentialIntegerAttributeDecoder extends SequentialAttributeDecode
     }
 
     // Truncating int32 stores per output width; sign variants share bytes.
-    private storeTypedValues8(numValues: i32): void {
+    private unsafe storeTypedValues8(numValues: i32): void {
         let src = this.getPortableAttributeData()!;
         let total = numValues * this.attribute().numComponents;
         let dst = this.attribute().getAddress(0);
@@ -179,7 +179,7 @@ export class SequentialIntegerAttributeDecoder extends SequentialAttributeDecode
         }
     }
 
-    private storeTypedValues16(numValues: i32): void {
+    private unsafe storeTypedValues16(numValues: i32): void {
         let src = this.getPortableAttributeData()!;
         let total = numValues * this.attribute().numComponents;
         let dst = this.attribute().getAddress(0);
@@ -188,7 +188,7 @@ export class SequentialIntegerAttributeDecoder extends SequentialAttributeDecode
         }
     }
 
-    private storeTypedValues32(numValues: i32): void {
+    private unsafe storeTypedValues32(numValues: i32): void {
         let src = this.getPortableAttributeData()!;
         let total = numValues * this.attribute().numComponents;
         let dst = this.attribute().getAddress(0);

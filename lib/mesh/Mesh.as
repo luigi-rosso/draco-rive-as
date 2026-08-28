@@ -69,7 +69,7 @@ export class Mesh {
         return this._attributes[attId];
     }
 
-    setNumFaces(numFaces: i32): void {
+    unsafe setNumFaces(numFaces: i32): void {
         if (this.faces.length < numFaces * 3) {
             let grown = new Int32Array(numFaces * 3);
             memory.copy(grown.dataStart, this.faces.dataStart, <usize>this.faces.length << 2);

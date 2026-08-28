@@ -40,7 +40,7 @@ export class SequentialAttributeDecoder {
         return true;
     }
 
-    getPortableAttribute(): PointAttribute | null {
+    unsafe getPortableAttribute(): PointAttribute | null {
         // Copy the point->value index mapping from the final attribute to the
         // portable one.
         let attribute = this.attribute_!;

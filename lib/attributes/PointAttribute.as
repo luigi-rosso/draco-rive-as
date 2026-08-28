@@ -109,7 +109,7 @@ export class PointAttribute extends GeometryAttribute {
 
     // Mirrors C++ PointAttribute::ConvertValue(); writes numComponents values
     // into outVal as float64 (all source types are exactly representable).
-    convertValue(attIndex: i32, outVal: Float64Array): void {
+    unsafe convertValue(attIndex: i32, outVal: Float64Array): void {
         let bytePos = this.byteOffset + this.byteStride * attIndex;
         let buf = this.buffer;
         if (buf == null) {
@@ -158,7 +158,7 @@ export class PointAttribute extends GeometryAttribute {
     }
 
     // Per-component read as f64 for the extract loops (attIndex pre-mapped).
-    private readComponent(attIndex: i32, component: i32): f64 {
+    private unsafe readComponent(attIndex: i32, component: i32): f64 {
         let buf = this.buffer;
         if (buf == null) {
             return 0;
@@ -189,7 +189,7 @@ export class PointAttribute extends GeometryAttribute {
         return this._identityMapping ? i : <i32>unchecked(this._indicesMap[i]);
     }
 
-    extractToFloat32(numPoints: i32): Float32Array {
+    unsafe extractToFloat32(numPoints: i32): Float32Array {
         let nc = this.numComponents;
         let out = new Float32Array(numPoints * nc);
         let buf = this.buffer;

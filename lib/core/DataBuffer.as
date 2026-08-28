@@ -7,7 +7,7 @@ export class DataBuffer {
     private _data: Uint8Array = new Uint8Array(0);
 
     // `data == null` resizes to size + offset without writing.
-    update(data: Uint8Array | null, size: i32, offset: i32 = 0): bool {
+    unsafe update(data: Uint8Array | null, size: i32, offset: i32 = 0): bool {
         if (data == null) {
             if (size + offset < 0) {
                 return false;
@@ -29,7 +29,7 @@ export class DataBuffer {
         this._resize(newSize);
     }
 
-    write(bytePos: i32, inArray: Uint8Array, dataSize: i32): void {
+    unsafe write(bytePos: i32, inArray: Uint8Array, dataSize: i32): void {
         memory.copy(this._data.dataStart + <usize>bytePos, inArray.dataStart, <usize>dataSize);
     }
 
@@ -41,7 +41,7 @@ export class DataBuffer {
         return this._data.length;
     }
 
-    private _resize(newSize: i32): void {
+    private unsafe _resize(newSize: i32): void {
         if (newSize == this._data.length) {
             return;
         }

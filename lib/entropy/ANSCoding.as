@@ -149,7 +149,7 @@ export class RAnsDecoder {
 
     // Batch ransRead() into out[0..count). Hot loop: raw loads/stores off the
     // view data pointers -- this is the single hottest loop in the decoder.
-    decodeSymbols(out: Uint32Array, count: i32): void {
+    unsafe decodeSymbols(out: Uint32Array, count: i32): void {
         let lRansBase = this.lRansBase;
         let ransPrecisionBits = this.ransPrecisionBits;
         let ransPrecisionMask = this.ransPrecisionMask;

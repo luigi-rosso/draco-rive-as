@@ -35,7 +35,7 @@ export class IntVector {
         }
     }
 
-    push(value: i32): void {
+    unsafe push(value: i32): void {
         if (this._size == this._data.length) {
             this.grow(this._size + 1);
         }
@@ -43,19 +43,19 @@ export class IntVector {
         this._size++;
     }
 
-    get(index: i32): i32 {
+    unsafe get(index: i32): i32 {
         return load<i32>(this._ptr + (<usize>index << 2));
     }
 
-    set(index: i32, value: i32): void {
+    unsafe set(index: i32, value: i32): void {
         store<i32>(this._ptr + (<usize>index << 2), value);
     }
 
-    back(): i32 {
+    unsafe back(): i32 {
         return load<i32>(this._ptr + (<usize>(this._size - 1) << 2));
     }
 
-    setBack(value: i32): void {
+    unsafe setBack(value: i32): void {
         store<i32>(this._ptr + (<usize>(this._size - 1) << 2), value);
     }
 
@@ -68,7 +68,7 @@ export class IntVector {
     }
 
     // std::vector::resize(n, fill): new slots get |fill|, shrink keeps data.
-    resize(newSize: i32, fill: i32 = 0): void {
+    unsafe resize(newSize: i32, fill: i32 = 0): void {
         if (newSize > this._data.length) {
             this.grow(newSize);
         }

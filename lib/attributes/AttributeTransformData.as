@@ -18,11 +18,11 @@ export class AttributeTransformData {
         return this._buffer.data().dataStart + <usize>byteOffset;
     }
 
-    setInt32(byteOffset: i32, value: i32): void {
+    unsafe setInt32(byteOffset: i32, value: i32): void {
         store<i32>(this.grow(byteOffset, 4), value);
     }
 
-    setFloat32(byteOffset: i32, value: f32): void {
+    unsafe setFloat32(byteOffset: i32, value: f32): void {
         store<f32>(this.grow(byteOffset, 4), value);
     }
 

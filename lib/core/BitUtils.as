@@ -2,7 +2,7 @@
 //
 // Zigzag decode of unsigned symbols back to signed integers.
 
-export function convertSymbolsToSignedInts(input: Uint32Array, count: i32, output: Int32Array): void {
+export unsafe function convertSymbolsToSignedInts(input: Uint32Array, count: i32, output: Int32Array): void {
     let inPtr = input.dataStart;
     let outPtr = output.dataStart;
     for (let i = 0; i < count; i++) {
