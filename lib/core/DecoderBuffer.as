@@ -201,7 +201,7 @@ export class DecoderBuffer {
         return val;
     }
 
-    unsafe decodeBytes(size: i32): Uint8Array | null {
+    unsafe decodeBytes(size: i32): Uint8Array? {
         if (this.pos + size > this.dataSize) {
             this.err = true;
             return null;

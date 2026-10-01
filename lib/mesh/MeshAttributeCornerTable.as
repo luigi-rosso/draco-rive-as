@@ -21,7 +21,7 @@ export class MeshAttributeCornerTable extends CornerTableBase {
     // Attribute entry id per vertex, exposed through vertexParent().
     private vertexToAttributeEntryIdMap: IntVector = new IntVector();
 
-    private _cornerTable: CornerTable | null = null;
+    private _cornerTable: CornerTable? = null;
 
     initEmpty(table: CornerTable): bool {
         this.isEdgeOnSeam = new Uint8Array(table.numCorners());
@@ -101,9 +101,9 @@ export class MeshAttributeCornerTable extends CornerTableBase {
         }
     }
 
-    // Recomputes vertices from the seam edges. With |mesh| and |att| null the
+    // Recomputes vertices from the seam edges. With |mesh| and |att? the
     // vertex to attribute value mapping is identity.
-    recomputeVertices(mesh: Mesh | null, att: PointAttribute | null): bool {
+    recomputeVertices(mesh: Mesh?, att: PointAttribute?): bool {
         let table = this._cornerTable!;
         let initVertexToAttributeEntryMap = mesh != null && att != null;
         this.vertexToAttributeEntryIdMap.clear();

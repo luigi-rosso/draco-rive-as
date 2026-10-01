@@ -10,7 +10,7 @@ import { VertexCornersIterator } from "../mesh/CornerTable";
 import { MeshPredictionSchemeData } from "./MeshPredictionSchemeData";
 
 export class MeshPredictionSchemeGeometricNormalPredictorArea {
-    private posAttribute: PointAttribute | null = null;
+    private posAttribute: PointAttribute? = null;
     private entryToPointIdMap: Int32Array = new Int32Array(0);
     private meshData: MeshPredictionSchemeData;
     // Scratch for position reads.

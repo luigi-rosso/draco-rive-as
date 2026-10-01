@@ -7,10 +7,10 @@ import { PredictionSchemeDecoder } from "../prediction/PredictionSchemeDecoder";
 import { PointCloudDecoder } from "../point_cloud/PointCloudDecoder";
 
 export class SequentialAttributeDecoder {
-    protected decoder_: PointCloudDecoder | null = null;
-    protected attribute_: PointAttribute | null = null;
+    protected decoder_: PointCloudDecoder? = null;
+    protected attribute_: PointAttribute? = null;
     protected attributeId_: i32 = -1;
-    protected portableAttribute_: PointAttribute | null = null;
+    protected portableAttribute_: PointAttribute? = null;
 
     init(decoder: PointCloudDecoder, attributeId: i32): bool {
         this.decoder_ = decoder;
@@ -40,7 +40,7 @@ export class SequentialAttributeDecoder {
         return true;
     }
 
-    unsafe getPortableAttribute(): PointAttribute | null {
+    unsafe getPortableAttribute(): PointAttribute? {
         // Copy the point->value index mapping from the final attribute to the
         // portable one.
         let attribute = this.attribute_!;
@@ -103,7 +103,7 @@ export class SequentialAttributeDecoder {
         this.portableAttribute_ = att;
     }
 
-    protected portableAttribute(): PointAttribute | null {
+    protected portableAttribute(): PointAttribute? {
         return this.portableAttribute_;
     }
 }

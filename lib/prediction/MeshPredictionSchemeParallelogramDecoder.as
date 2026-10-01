@@ -50,7 +50,7 @@ export class MeshPredictionSchemeParallelogramDecoder extends PredictionSchemeDe
     private transform: PredictionSchemeWrapDecodingTransform;
     private meshData: MeshPredictionSchemeData;
 
-    constructor(attribute: PointAttribute | null,
+    constructor(attribute: PointAttribute?,
                 transform: PredictionSchemeWrapDecodingTransform,
                 meshData: MeshPredictionSchemeData) {
         super(attribute);

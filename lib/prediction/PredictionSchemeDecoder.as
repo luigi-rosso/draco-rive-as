@@ -13,13 +13,13 @@ import {
 } from "../config/CompressionShared";
 
 export abstract class PredictionSchemeDecoder {
-    protected attribute: PointAttribute | null;
+    protected attribute: PointAttribute?;
 
-    constructor(attribute: PointAttribute | null) {
+    constructor(attribute: PointAttribute?) {
         this.attribute = attribute;
     }
 
-    getAttribute(): PointAttribute | null {
+    getAttribute(): PointAttribute? {
         return this.attribute;
     }
 

@@ -19,7 +19,7 @@ import { PredictionSchemeWrapDecodingTransform } from "../prediction/PredictionS
 import { createPredictionSchemeForDecoderWrap } from "../prediction/CreatePredictionSchemeForDecoder";
 
 export class SequentialIntegerAttributeDecoder extends SequentialAttributeDecoder {
-    protected predictionScheme_: PredictionSchemeDecoder | null = null;
+    protected predictionScheme_: PredictionSchemeDecoder? = null;
 
     transformAttributeToOriginalFormat(pointIds: Int32Array): bool {
         return this.storeValues(pointIds.length);
@@ -141,7 +141,7 @@ export class SequentialIntegerAttributeDecoder extends SequentialAttributeDecode
 
     // Prediction scheme for integer values; subclasses override for others.
     protected createIntPredictionScheme(
-        method: i32, transformType: i32): PredictionSchemeDecoder | null {
+        method: i32, transformType: i32): PredictionSchemeDecoder? {
         if (transformType != PredictionSchemeTransformType.PREDICTION_TRANSFORM_WRAP) {
             return null; // For now only the wrap transform is supported here.
         }
@@ -207,7 +207,7 @@ export class SequentialIntegerAttributeDecoder extends SequentialAttributeDecode
         this.setPortableAttribute(portAtt);
     }
 
-    protected getPortableAttributeData(): Int32Array | null {
+    protected getPortableAttributeData(): Int32Array? {
         let portable = this.portableAttribute();
         if (portable == null || portable.size() == 0) {
             return null;

@@ -15,9 +15,9 @@ import { PointsSequencer } from "../attributes/PointsSequencer";
 import { SequentialAttributeDecodersController } from "../attributes/SequentialAttributeDecodersController";
 
 export class MeshEdgebreakerDecoder extends MeshDecoder {
-    private impl_: MeshEdgebreakerDecoderImpl | null = null;
+    private impl_: MeshEdgebreakerDecoderImpl? = null;
 
-    getCornerTable(): CornerTable | null {
+    getCornerTable(): CornerTable? {
         let impl = this.impl_;
         if (impl == null) {
             return null;
@@ -25,7 +25,7 @@ export class MeshEdgebreakerDecoder extends MeshDecoder {
         return impl.getCornerTable();
     }
 
-    getAttributeCornerTable(attId: i32): MeshAttributeCornerTable | null {
+    getAttributeCornerTable(attId: i32): MeshAttributeCornerTable? {
         let impl = this.impl_;
         if (impl == null) {
             return null;
@@ -33,7 +33,7 @@ export class MeshEdgebreakerDecoder extends MeshDecoder {
         return impl.getAttributeCornerTable(attId);
     }
 
-    getAttributeEncodingData(attId: i32): MeshAttributeIndicesEncodingData | null {
+    getAttributeEncodingData(attId: i32): MeshAttributeIndicesEncodingData? {
         let impl = this.impl_;
         if (impl == null) {
             return null;

@@ -76,11 +76,11 @@ export function decodeHeader(buffer: DecoderBuffer, outHeader: DracoHeader): Sta
 }
 
 export class PointCloudDecoder extends MeshEdgebreakerDecoderHost {
-    protected pointCloud_: Mesh | null = null;
-    protected buffer_: DecoderBuffer | null = null;
+    protected pointCloud_: Mesh? = null;
+    protected buffer_: DecoderBuffer? = null;
     protected versionMajor_: i32 = 0;
     protected versionMinor_: i32 = 0;
-    protected options_: DecoderOptions | null = null;
+    protected options_: DecoderOptions? = null;
     protected attributesDecoders_: Array<AttributesDecoder> = new Array<AttributesDecoder>();
     // Attribute id to attributes-decoder id.
     protected attributeToDecoderMap_: Int32Array = new Int32Array(0);
@@ -172,7 +172,7 @@ export class PointCloudDecoder extends MeshEdgebreakerDecoderHost {
         return true;
     }
 
-    getPortableAttribute(parentAttId: i32): PointAttribute | null {
+    getPortableAttribute(parentAttId: i32): PointAttribute? {
         let pc = this.pointCloud_;
         if (pc == null || parentAttId < 0 || parentAttId >= pc.numAttributes()) {
             return null;
@@ -205,20 +205,20 @@ export class PointCloudDecoder extends MeshEdgebreakerDecoderHost {
         return this.buffer_!;
     }
 
-    options(): DecoderOptions | null {
+    options(): DecoderOptions? {
         return this.options_;
     }
 
     // Virtuals for the prediction scheme factory; the mesh decoders override.
-    getCornerTable(): CornerTable | null {
+    getCornerTable(): CornerTable? {
         return null;
     }
 
-    getAttributeCornerTable(attId: i32): MeshAttributeCornerTable | null {
+    getAttributeCornerTable(attId: i32): MeshAttributeCornerTable? {
         return null;
     }
 
-    getAttributeEncodingData(attId: i32): MeshAttributeIndicesEncodingData | null {
+    getAttributeEncodingData(attId: i32): MeshAttributeIndicesEncodingData? {
         return null;
     }
 

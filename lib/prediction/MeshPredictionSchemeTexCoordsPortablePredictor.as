@@ -36,7 +36,7 @@ function absMax2(a: i64, b: i64): i64 {
 }
 
 export class MeshPredictionSchemeTexCoordsPortablePredictor {
-    private posAttribute: PointAttribute | null = null;
+    private posAttribute: PointAttribute? = null;
     private entryToPointIdMap: Int32Array = new Int32Array(0);
     private _predictedValue: Int32Array = new Int32Array(kTexCoordsNumComponents);
     // Decoded UV flips, consumed from the back.

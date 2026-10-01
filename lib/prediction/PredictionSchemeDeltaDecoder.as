@@ -13,7 +13,7 @@ import { PredictionSchemeNormalOctahedronCanonicalizedDecodingTransform } from "
 export class PredictionSchemeDeltaDecoderWrap extends PredictionSchemeDecoder {
     private transform: PredictionSchemeWrapDecodingTransform;
 
-    constructor(attribute: PointAttribute | null,
+    constructor(attribute: PointAttribute?,
                 transform: PredictionSchemeWrapDecodingTransform) {
         super(attribute);
         this.transform = transform;
@@ -55,7 +55,7 @@ export class PredictionSchemeDeltaDecoderWrap extends PredictionSchemeDecoder {
 export class PredictionSchemeDeltaDecoderNormalOcta extends PredictionSchemeDecoder {
     private transform: PredictionSchemeNormalOctahedronCanonicalizedDecodingTransform;
 
-    constructor(attribute: PointAttribute | null,
+    constructor(attribute: PointAttribute?,
                 transform: PredictionSchemeNormalOctahedronCanonicalizedDecodingTransform) {
         super(attribute);
         this.transform = transform;

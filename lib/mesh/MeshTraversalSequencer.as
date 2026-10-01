@@ -14,7 +14,7 @@ import { TraverserBase } from "./TraverserBase";
 export class MeshTraversalSequencer extends PointsSequencer {
     private mesh: Mesh;
     private encodingData: MeshAttributeIndicesEncodingData;
-    private traverser: TraverserBase | null = null;
+    private traverser: TraverserBase? = null;
     private outPointIds: IntVector = new IntVector();
 
     constructor(mesh: Mesh, encodingData: MeshAttributeIndicesEncodingData) {

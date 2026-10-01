@@ -20,7 +20,7 @@ export class MeshPredictionSchemeGeometricNormalDecoder extends PredictionScheme
     private octahedronToolBox: OctahedronToolBox = new OctahedronToolBox();
     private flipNormalBitDecoder: RAnsBitDecoder = new RAnsBitDecoder();
 
-    constructor(attribute: PointAttribute | null,
+    constructor(attribute: PointAttribute?,
                 transform: PredictionSchemeNormalOctahedronCanonicalizedDecodingTransform,
                 meshData: MeshPredictionSchemeData) {
         super(attribute);

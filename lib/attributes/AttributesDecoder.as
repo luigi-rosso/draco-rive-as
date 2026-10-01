@@ -13,8 +13,8 @@ export class AttributesDecoder {
     private pointAttributeIds_: Array<i32> = new Array<i32>();
     // Inverse of pointAttributeIds_: point attribute id -> local id.
     private pointAttributeToLocalIdMap_: Array<i32> = new Array<i32>();
-    private pointCloudDecoder_: PointCloudDecoder | null = null;
-    private pointCloud_: Mesh | null = null;
+    private pointCloudDecoder_: PointCloudDecoder? = null;
+    private pointCloud_: Mesh? = null;
 
     init(decoder: PointCloudDecoder, pointCloud: Mesh): bool {
         this.pointCloudDecoder_ = decoder;
@@ -128,7 +128,7 @@ export class AttributesDecoder {
     }
 
     // Virtuals overridden by derived classes.
-    getPortableAttribute(pointAttributeId: i32): PointAttribute | null {
+    getPortableAttribute(pointAttributeId: i32): PointAttribute? {
         return null;
     }
 

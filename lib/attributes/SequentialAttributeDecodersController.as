@@ -64,7 +64,7 @@ export class SequentialAttributeDecodersController extends AttributesDecoder {
         return super.decodeAttributes(buffer);
     }
 
-    getPortableAttribute(pointAttributeId: i32): PointAttribute | null {
+    getPortableAttribute(pointAttributeId: i32): PointAttribute? {
         let locId = this.getLocalIdForPointAttribute(pointAttributeId);
         if (locId < 0) {
             return null;
@@ -116,7 +116,7 @@ export class SequentialAttributeDecodersController extends AttributesDecoder {
         return true;
     }
 
-    private createSequentialDecoder(decoderType: i32): SequentialAttributeDecoder | null {
+    private createSequentialDecoder(decoderType: i32): SequentialAttributeDecoder? {
         if (decoderType == SequentialAttributeEncoderType.SEQUENTIAL_ATTRIBUTE_ENCODER_GENERIC) {
             return new SequentialAttributeDecoder();
         } else if (decoderType == SequentialAttributeEncoderType.SEQUENTIAL_ATTRIBUTE_ENCODER_INTEGER) {

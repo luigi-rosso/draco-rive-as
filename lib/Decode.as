@@ -16,7 +16,7 @@ import { MeshEdgebreakerDecoder } from "./mesh/MeshEdgebreakerDecoder";
 import { PointCloudDecoder, decodeHeader } from "./point_cloud/PointCloudDecoder";
 
 export class DecodeMeshResult {
-    mesh: Mesh | null = null;
+    mesh: Mesh? = null;
     status: Status = new Status();
 }
 
@@ -29,7 +29,7 @@ function peekHeader(inBuffer: DecoderBuffer, outHeader: DracoHeader): Status {
     return decodeHeader(tempBuffer, outHeader);
 }
 
-function createMeshDecoder(method: i32): MeshDecoder | null {
+function createMeshDecoder(method: i32): MeshDecoder? {
     if (method == MeshEncoderMethod.MESH_SEQUENTIAL_ENCODING) {
         return null; // Sequential mesh encoding is not in the ported subset.
     } else if (method == MeshEncoderMethod.MESH_EDGEBREAKER_ENCODING) {

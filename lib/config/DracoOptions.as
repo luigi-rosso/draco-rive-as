@@ -13,7 +13,7 @@ export class DracoOptions {
         return defaultVal;
     }
 
-    findAttributeOptions(attKey: i32): Map<string, bool> | null {
+    findAttributeOptions(attKey: i32): Map<string, bool>? {
         if (this.attributeOptions.has(attKey)) {
             return this.attributeOptions.get(attKey);
         }

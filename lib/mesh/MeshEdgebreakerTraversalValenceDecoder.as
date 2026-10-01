@@ -16,7 +16,7 @@ import {
 } from "./MeshEdgebreakerShared";
 
 export class MeshEdgebreakerTraversalValenceDecoder extends MeshEdgebreakerTraversalDecoder {
-    private cornerTable: CornerTable | null = null;
+    private cornerTable: CornerTable? = null;
     private numVertices: i32 = 0;
     private vertexValences: Int32Array = new Int32Array(0);
     private lastSymbol: i32 = -1;

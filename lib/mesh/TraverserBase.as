@@ -6,8 +6,8 @@ import { CornerTableBase, kInvalidCornerIndex, kInvalidFaceIndex } from "./Corne
 import { MeshAttributeIndicesEncodingObserver } from "./MeshAttributeIndicesEncodingObserver";
 
 export abstract class TraverserBase {
-    protected _cornerTable: CornerTableBase | null = null;
-    protected _observer: MeshAttributeIndicesEncodingObserver | null = null;
+    protected _cornerTable: CornerTableBase? = null;
+    protected _observer: MeshAttributeIndicesEncodingObserver? = null;
     private isFaceVisitedFlags: Uint8Array = new Uint8Array(0);
     private isVertexVisitedFlags: Uint8Array = new Uint8Array(0);
 

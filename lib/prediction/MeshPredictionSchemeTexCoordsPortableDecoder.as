@@ -19,7 +19,7 @@ export class MeshPredictionSchemeTexCoordsPortableDecoder extends PredictionSche
     private meshData: MeshPredictionSchemeData;
     private predictor: MeshPredictionSchemeTexCoordsPortablePredictor;
 
-    constructor(attribute: PointAttribute | null,
+    constructor(attribute: PointAttribute?,
                 transform: PredictionSchemeWrapDecodingTransform,
                 meshData: MeshPredictionSchemeData) {
         super(attribute);

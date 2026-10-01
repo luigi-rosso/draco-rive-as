@@ -7,7 +7,7 @@ export class DataBuffer {
     private _data: Uint8Array = new Uint8Array(0);
 
     // `data == null` resizes to size + offset without writing.
-    unsafe update(data: Uint8Array | null, size: i32, offset: i32 = 0): bool {
+    unsafe update(data: Uint8Array?, size: i32, offset: i32 = 0): bool {
         if (data == null) {
             if (size + offset < 0) {
                 return false;

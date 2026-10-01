@@ -52,8 +52,8 @@ export class AttributeData {
 }
 
 export class MeshEdgebreakerDecoderImpl {
-    private decoder: MeshEdgebreakerDecoderHost | null = null;
-    private cornerTable: CornerTable | null = null;
+    private decoder: MeshEdgebreakerDecoderHost? = null;
+    private cornerTable: CornerTable? = null;
 
     // Decoded topology split events, consumed from the back.
     private topologySplitData: Array<TopologySplitEventData> = new Array<TopologySplitEventData>();
@@ -88,11 +88,11 @@ export class MeshEdgebreakerDecoderImpl {
         return true;
     }
 
-    getCornerTable(): CornerTable | null {
+    getCornerTable(): CornerTable? {
         return this.cornerTable;
     }
 
-    getAttributeCornerTable(attId: i32): MeshAttributeCornerTable | null {
+    getAttributeCornerTable(attId: i32): MeshAttributeCornerTable? {
         let decoder = this.decoder!;
         for (let i = 0; i < this.attributeData.length; i++) {
             let decoderId = this.attributeData[i].decoderId;
@@ -181,7 +181,7 @@ export class MeshEdgebreakerDecoderImpl {
         let traversalMethod = <i32>traversalMethodEncoded;
 
         let mesh = decoder.mesh();
-        let sequencer: PointsSequencer | null = null;
+        let sequencer: PointsSequencer? = null;
 
         if (decoderType == <u32>MeshAttributeElementType.MESH_VERTEX_ATTRIBUTE) {
             // Per-vertex attribute decoder.

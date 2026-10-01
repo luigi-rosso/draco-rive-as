@@ -15,7 +15,7 @@ export enum GeometryAttributeType {
 }
 
 export class GeometryAttribute {
-    buffer: DataBuffer | null = null;
+    buffer: DataBuffer? = null;
     numComponents: i32 = 1;
     dataType: i32 = DataType.FLOAT32;
     normalized: bool = false;
@@ -25,7 +25,7 @@ export class GeometryAttribute {
     uniqueId: u32 = 0;
 
     init(
-        attributeType: i32, buf: DataBuffer | null, numComponents: i32, dataType: i32,
+        attributeType: i32, buf: DataBuffer?, numComponents: i32, dataType: i32,
         normalized: bool, byteStride: i32, byteOffset: i32): void {
         this.buffer = buf;
         this.numComponents = numComponents;

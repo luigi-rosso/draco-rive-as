@@ -60,7 +60,7 @@ export class SequentialNormalAttributeDecoder extends SequentialIntegerAttribute
     }
 
     protected createIntPredictionScheme(
-        method: i32, transformType: i32): PredictionSchemeDecoder | null {
+        method: i32, transformType: i32): PredictionSchemeDecoder? {
         if (transformType ==
             PredictionSchemeTransformType.PREDICTION_TRANSFORM_NORMAL_OCTAHEDRON_CANONICALIZED) {
             let transform =

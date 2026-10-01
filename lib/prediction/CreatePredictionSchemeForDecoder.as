@@ -20,7 +20,7 @@ import { PointCloudDecoder } from "../point_cloud/PointCloudDecoder";
 // Builds the mesh data for the attribute, preferring the attribute corner
 // table; null when the decoder has no connectivity for the attribute.
 function resolveMeshData(
-    decoder: PointCloudDecoder, attId: i32): MeshPredictionSchemeData | null {
+    decoder: PointCloudDecoder, attId: i32): MeshPredictionSchemeData? {
     if (decoder.getGeometryType() != EncodedGeometryType.TRIANGULAR_MESH) {
         return null;
     }
@@ -46,7 +46,7 @@ function resolveMeshData(
 
 export function createPredictionSchemeForDecoderWrap(
     method: i32, attId: i32, decoder: PointCloudDecoder,
-    transform: PredictionSchemeWrapDecodingTransform): PredictionSchemeDecoder | null {
+    transform: PredictionSchemeWrapDecodingTransform): PredictionSchemeDecoder? {
     if (method == PredictionSchemeMethod.PREDICTION_NONE) {
         return null;
     }
@@ -63,7 +63,7 @@ export function createPredictionSchemeForDecoderWrap(
 
 export function createPredictionSchemeForDecoderNormalOcta(
     method: i32, attId: i32, decoder: PointCloudDecoder,
-    transform: PredictionSchemeNormalOctahedronCanonicalizedDecodingTransform): PredictionSchemeDecoder | null {
+    transform: PredictionSchemeNormalOctahedronCanonicalizedDecodingTransform): PredictionSchemeDecoder? {
     if (method == PredictionSchemeMethod.PREDICTION_NONE) {
         return null;
     }

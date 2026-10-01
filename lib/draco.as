@@ -16,13 +16,13 @@ export class DracoMesh {
     numPoints: i32 = 0;
     numFaces: i32 = 0;
     faces: Int32Array = new Int32Array(0);
-    positions: Float32Array | null = null;
-    normals: Float32Array | null = null;
-    texcoords: Float32Array | null = null;
-    colors: Float32Array | null = null;
+    positions: Float32Array? = null;
+    normals: Float32Array? = null;
+    texcoords: Float32Array? = null;
+    colors: Float32Array? = null;
 }
 
-function extract(att: PointAttribute | null, numPoints: i32): Float32Array | null {
+function extract(att: PointAttribute?, numPoints: i32): Float32Array? {
     if (att == null) {
         return null;
     }

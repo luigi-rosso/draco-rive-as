@@ -61,7 +61,7 @@ export class Mesh {
         return this._namedAttributeIndex[type][i];
     }
 
-    getNamedAttribute(type: i32, i: i32 = 0): PointAttribute | null {
+    getNamedAttribute(type: i32, i: i32 = 0): PointAttribute? {
         let attId = this.getNamedAttributeId(type, i);
         if (attId == -1) {
             return null;

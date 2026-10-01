@@ -42,7 +42,7 @@ function fmtFixed(x: f64, digits: i32): string {
 
 // Max abs diff between a decoded f32 array and count floats at byteOff in the
 // golden fixture; -1 when the decoded attribute is missing.
-function attrMaxDiff(arr: Float32Array | null, golden: ArrayBuffer, byteOff: i32, count: i32): f64 {
+function attrMaxDiff(arr: Float32Array?, golden: ArrayBuffer, byteOff: i32, count: i32): f64 {
     if (arr == null || arr.length < count) {
         return -1;
     }

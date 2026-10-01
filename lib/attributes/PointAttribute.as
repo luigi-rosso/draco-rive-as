@@ -19,10 +19,10 @@ export class PointAttribute extends GeometryAttribute {
     private _identityMapping: bool = false;
     private _numUniqueEntries: i32 = 0;
     private _indicesMap: Uint32Array = new Uint32Array(0);
-    private _attributeBuffer: DataBuffer | null = null;
-    private _attributeTransformData: AttributeTransformData | null = null;
+    private _attributeBuffer: DataBuffer? = null;
+    private _attributeTransformData: AttributeTransformData? = null;
 
-    constructor(geometryAttribute: GeometryAttribute | null = null) {
+    constructor(geometryAttribute: GeometryAttribute? = null) {
         super();
         if (geometryAttribute != null) {
             this.buffer = geometryAttribute.buffer;
@@ -103,7 +103,7 @@ export class PointAttribute extends GeometryAttribute {
         this._indicesMap = map;
     }
 
-    setAttributeTransformData(transformData: AttributeTransformData | null): void {
+    setAttributeTransformData(transformData: AttributeTransformData?): void {
         this._attributeTransformData = transformData;
     }
 

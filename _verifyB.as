@@ -262,7 +262,7 @@ import { MaxPredictionDegreeTraverser } from "./lib/mesh/MaxPredictionDegreeTrav
 import { TraverserBase } from "./lib/mesh/TraverserBase";
 import { MeshAttributeCornerTable } from "./lib/mesh/MeshAttributeCornerTable";
 
-let travSequencer: MeshTraversalSequencer | null = null;
+let travSequencer: MeshTraversalSequencer? = null;
 let travEncodingData = new MeshAttributeIndicesEncodingData();
 
 // Runs a traversal over the built corner table with mesh faces equal to the
@@ -367,8 +367,8 @@ import { MeshPredictionSchemeGeometricNormalPredictorArea } from "./lib/predicti
 let predMeshData = new MeshPredictionSchemeData();
 let predD2c = new IntVector();
 let predUv = new Int32Array(0);
-let texPredictor: MeshPredictionSchemeTexCoordsPortablePredictor | null = null;
-let gnPredictor: MeshPredictionSchemeGeometricNormalPredictorArea | null = null;
+let texPredictor: MeshPredictionSchemeTexCoordsPortablePredictor? = null;
+let gnPredictor: MeshPredictionSchemeGeometricNormalPredictorArea? = null;
 let gnOut = new Int32Array(3);
 
 export function predSetup(): i32 {

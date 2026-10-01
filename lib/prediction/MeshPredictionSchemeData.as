@@ -7,14 +7,14 @@ import { IntVector } from "../mesh/IntVector";
 import { Mesh } from "../mesh/Mesh";
 
 export class MeshPredictionSchemeData {
-    private _mesh: Mesh | null = null;
-    private _cornerTable: CornerTableBase | null = null;
+    private _mesh: Mesh? = null;
+    private _cornerTable: CornerTableBase? = null;
 
     // Mapping between vertices and their encoding order.
     private _vertexToDataMap: Int32Array = new Int32Array(0);
 
     // Which corner was processed when a given attribute entry was decoded.
-    private _dataToCornerMap: IntVector | null = null;
+    private _dataToCornerMap: IntVector? = null;
 
     private _isInitialized: bool = false;
 
