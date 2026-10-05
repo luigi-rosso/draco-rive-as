@@ -5,8 +5,20 @@
 
 import { DecoderBuffer } from "./core/DecoderBuffer";
 import { GeometryAttributeType } from "./attributes/GeometryAttribute";
-import { PointAttribute } from "./attributes/PointAttribute";
 import { Decoder } from "./Decode";
+import { DataType } from "./core/DracoTypes";
+import { Mesh } from "./mesh/Mesh";
+
+// One decoded attribute in the type the stream declared, numPoints *
+// numComponents values; glTF primitives map their attributes by uniqueId.
+export class DracoAttribute {
+    uniqueId: u32 = 0;
+    attributeType: i32 = GeometryAttributeType.INVALID;
+    dataType: i32 = DataType.INVALID;
+    numComponents: i32 = 0;
+    normalized: bool = false;
+    data: ArrayBuffer = new ArrayBuffer(0);
+}
 
 // Decoded mesh: each attribute is a flat typed array of numPoints *
 // components, indexed by faces (numFaces * 3).
@@ -20,13 +32,30 @@ export class DracoMesh {
     normals: Float32Array? = null;
     texcoords: Float32Array? = null;
     colors: Float32Array? = null;
-}
+    attributes: Array<DracoAttribute> = new Array<DracoAttribute>();
 
-function extract(att: PointAttribute?, numPoints: i32): Float32Array? {
-    if (att == null) {
+    attributeById(uniqueId: u32): DracoAttribute? {
+        for (let i = 0; i < this.attributes.length; i++) {
+            let att = this.attributes[i];
+            if (att.uniqueId == uniqueId) {
+                return att;
+            }
+        }
         return null;
     }
-    return att.extractToFloat32(numPoints);
+}
+
+function extract(
+    mesh: Mesh, out: DracoMesh, type: i32, numPoints: i32): Float32Array? {
+    let attId = mesh.getNamedAttributeId(type);
+    if (attId < 0) {
+        return null;
+    }
+    let raw = out.attributes[attId];
+    if (raw.dataType == DataType.FLOAT32) {
+        return Float32Array.wrap(raw.data);
+    }
+    return mesh.attribute(attId).extractToFloat32(numPoints);
 }
 
 // Decodes a Draco mesh bitstream (a .drc file's bytes, or the buffer from a
@@ -55,14 +84,21 @@ export unsafe function decode(data: ArrayBuffer): DracoMesh {
     memory.copy(faces.dataStart, mesh.faces.dataStart, <usize>faces.length << 2);
     out.faces = faces;
 
-    out.positions = extract(
-        mesh.getNamedAttribute(GeometryAttributeType.POSITION), numPoints);
-    out.normals = extract(
-        mesh.getNamedAttribute(GeometryAttributeType.NORMAL), numPoints);
-    out.texcoords = extract(
-        mesh.getNamedAttribute(GeometryAttributeType.TEX_COORD), numPoints);
-    out.colors = extract(
-        mesh.getNamedAttribute(GeometryAttributeType.COLOR), numPoints);
+    for (let i = 0; i < mesh.numAttributes(); i++) {
+        let att = mesh.attribute(i);
+        let raw = new DracoAttribute();
+        raw.uniqueId = att.uniqueId;
+        raw.attributeType = att.attributeType;
+        raw.dataType = att.dataType;
+        raw.numComponents = att.numComponents;
+        raw.normalized = att.normalized;
+        raw.data = att.extractRaw(numPoints);
+        out.attributes.push(raw);
+    }
+    out.positions = extract(mesh, out, GeometryAttributeType.POSITION, numPoints);
+    out.normals = extract(mesh, out, GeometryAttributeType.NORMAL, numPoints);
+    out.texcoords = extract(mesh, out, GeometryAttributeType.TEX_COORD, numPoints);
+    out.colors = extract(mesh, out, GeometryAttributeType.COLOR, numPoints);
 
     out.ok = true;
     return out;

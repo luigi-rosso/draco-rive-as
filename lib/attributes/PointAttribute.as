@@ -189,6 +189,28 @@ export class PointAttribute extends GeometryAttribute {
         return this._identityMapping ? i : <i32>unchecked(this._indicesMap[i]);
     }
 
+    // Values in point order, numComponents entries of dataType per point.
+    unsafe extractRaw(numPoints: i32): ArrayBuffer {
+        let entry = dataTypeLength(this.dataType) * this.numComponents;
+        let out = new ArrayBuffer(numPoints * entry);
+        let buf = this.buffer;
+        if (buf == null || numPoints == 0) {
+            return out;
+        }
+        let base = buf.data().dataStart + <usize>this.byteOffset;
+        let stride = <usize>this.byteStride;
+        let dst = changetype<usize>(out);
+        if (this._identityMapping && stride == <usize>entry) {
+            memory.copy(dst, base, <usize>(numPoints * entry));
+            return out;
+        }
+        for (let i = 0; i < numPoints; i++) {
+            memory.copy(dst, base + stride * <usize>this.extractIndex(i), <usize>entry);
+            dst += <usize>entry;
+        }
+        return out;
+    }
+
     unsafe extractToFloat32(numPoints: i32): Float32Array {
         let nc = this.numComponents;
         let out = new Float32Array(numPoints * nc);
