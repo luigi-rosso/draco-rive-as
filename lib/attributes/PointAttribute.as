@@ -66,11 +66,11 @@ export class PointAttribute extends GeometryAttribute {
         return this._numUniqueEntries;
     }
 
-    mappedIndex(pointIndex: i32): u32 {
+    unsafe mappedIndex(pointIndex: i32): u32 {
         if (this._identityMapping) {
             return <u32>pointIndex;
         }
-        return this._indicesMap[pointIndex];
+        return load<u32>(this._indicesMap.dataStart + (<usize>pointIndex << 2));
     }
 
     isMappingIdentity(): bool {

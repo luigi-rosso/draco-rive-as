@@ -36,6 +36,7 @@ export class IntVector {
         }
     }
 
+    @inline
     unsafe push(value: i32): void {
         if (this._size == this._data.length) {
             this.grow(this._size + 1);

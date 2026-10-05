@@ -33,9 +33,11 @@ export abstract class CornerTableBase {
         return 0;
     }
 
-    opposite(corner: i32): i32 {
+    @inline
+    unsafe opposite(corner: i32): i32 {
+        let seams = this.isEdgeOnSeam;
         if (corner == kInvalidCornerIndex ||
-            (corner < this.isEdgeOnSeam.length && unchecked(this.isEdgeOnSeam[corner]) != 0)) {
+            (corner < seams.byteLength && load<u8>(seams.dataStart + <usize>corner) != 0)) {
             return kInvalidCornerIndex;
         }
         return this.oppositeCorners.get(corner);
@@ -97,14 +99,17 @@ export abstract class CornerTableBase {
     //   /   \   /   \
     //  /   sl\c/sr   \
     // *-------v-------*
+    @inline
     swingRight(corner: i32): i32 {
         return this.previous(this.opposite(this.previous(corner)));
     }
 
+    @inline
     swingLeft(corner: i32): i32 {
         return this.next(this.opposite(this.next(corner)));
     }
 
+    @inline
     getLeftCorner(corner: i32): i32 {
         if (corner == kInvalidCornerIndex) {
             return kInvalidCornerIndex;
@@ -112,6 +117,7 @@ export abstract class CornerTableBase {
         return this.opposite(this.previous(corner));
     }
 
+    @inline
     getRightCorner(corner: i32): i32 {
         if (corner == kInvalidCornerIndex) {
             return kInvalidCornerIndex;

@@ -39,6 +39,7 @@ export class RAnsBitDecoder {
         return true;
     }
 
+    @inline
     decodeNextBit(): bool {
         let ans = this.ansDecoder;
         let p = this.p;

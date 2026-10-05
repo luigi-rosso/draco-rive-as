@@ -13,6 +13,7 @@ export class MeshPredictionPositionReader {
     entryToPointIdMap: Int32Array = new Int32Array(0);
     private scratch: Float64Array = new Float64Array(3);
 
+    @inline
     unsafe load(entryId: i32): void {
         let att = this.attribute!;
         let attIndex = <i32>att.mappedIndex(this.entryToPointIdMap[entryId]);
