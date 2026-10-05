@@ -7,10 +7,9 @@ import { DecoderBuffer } from "./core/DecoderBuffer";
 import { GeometryAttributeType } from "./attributes/GeometryAttribute";
 import { Decoder } from "./Decode";
 import { DecoderOptions } from "./config/DecoderOptions";
+import { DataType, dataTypeLength } from "./core/DracoTypes";
 
 export { DecoderOptions };
-import { DataType } from "./core/DracoTypes";
-import { Mesh } from "./mesh/Mesh";
 
 // One decoded attribute in the type the stream declared, numPoints *
 // numComponents values; glTF primitives map their attributes by uniqueId.
@@ -21,21 +20,69 @@ export class DracoAttribute {
     numComponents: i32 = 0;
     normalized: bool = false;
     data: ArrayBuffer = new ArrayBuffer(0);
+
+    // The values as floats: a view sharing data for float attributes, a
+    // converted copy otherwise.
+    unsafe toFloat32(): Float32Array {
+        let dt = this.dataType;
+        if (dt == DataType.FLOAT32) {
+            return Float32Array.wrap(this.data);
+        }
+        let size = dataTypeLength(dt);
+        let count = size > 0 ? this.data.byteLength / size : 0;
+        let out = new Float32Array(count);
+        let src = changetype<usize>(this.data);
+        for (let i = 0; i < count; i++) {
+            let v: f64 = 0;
+            if (dt == DataType.INT8) {
+                v = <f64>load<i8>(src + <usize>i);
+            } else if (dt == DataType.UINT8) {
+                v = <f64>load<u8>(src + <usize>i);
+            } else if (dt == DataType.INT16) {
+                v = <f64>load<i16>(src + (<usize>i << 1));
+            } else if (dt == DataType.UINT16) {
+                v = <f64>load<u16>(src + (<usize>i << 1));
+            } else if (dt == DataType.INT32) {
+                v = <f64>load<i32>(src + (<usize>i << 2));
+            } else if (dt == DataType.UINT32) {
+                v = <f64>load<u32>(src + (<usize>i << 2));
+            } else if (dt == DataType.FLOAT64) {
+                v = load<f64>(src + (<usize>i << 3));
+            }
+            unchecked(out[i] = <f32>v);
+        }
+        return out;
+    }
 }
 
-// Decoded mesh: each attribute is a flat typed array of numPoints *
-// components, indexed by faces (numFaces * 3).
+// Decoded mesh: each attribute is a flat array of numPoints * components,
+// indexed by faces (numFaces * 3). The named arrays are the first attribute
+// of each type as floats; for float attributes they share memory with
+// attributes[i].data, others convert on first access.
 export class DracoMesh {
     ok: bool = false;
     error: string = "";
     numPoints: i32 = 0;
     numFaces: i32 = 0;
     faces: Int32Array = new Int32Array(0);
-    positions: Float32Array? = null;
-    normals: Float32Array? = null;
-    texcoords: Float32Array? = null;
-    colors: Float32Array? = null;
     attributes: Array<DracoAttribute> = new Array<DracoAttribute>();
+    private namedFloats: Map<i32, Float32Array> = new Map<i32, Float32Array>();
+
+    get positions(): Float32Array? {
+        return this.named(GeometryAttributeType.POSITION);
+    }
+
+    get normals(): Float32Array? {
+        return this.named(GeometryAttributeType.NORMAL);
+    }
+
+    get texcoords(): Float32Array? {
+        return this.named(GeometryAttributeType.TEX_COORD);
+    }
+
+    get colors(): Float32Array? {
+        return this.named(GeometryAttributeType.COLOR);
+    }
 
     attributeById(uniqueId: u32): DracoAttribute? {
         for (let i = 0; i < this.attributes.length; i++) {
@@ -46,19 +93,21 @@ export class DracoMesh {
         }
         return null;
     }
-}
 
-function extract(
-    mesh: Mesh, out: DracoMesh, type: i32, numPoints: i32): Float32Array? {
-    let attId = mesh.getNamedAttributeId(type);
-    if (attId < 0) {
+    private named(type: i32): Float32Array? {
+        if (this.namedFloats.has(type)) {
+            return this.namedFloats.get(type);
+        }
+        for (let i = 0; i < this.attributes.length; i++) {
+            let att = this.attributes[i];
+            if (att.attributeType == type) {
+                let floats = att.toFloat32();
+                this.namedFloats.set(type, floats);
+                return floats;
+            }
+        }
         return null;
     }
-    let raw = out.attributes[attId];
-    if (raw.dataType == DataType.FLOAT32) {
-        return Float32Array.wrap(raw.data);
-    }
-    return mesh.attribute(attId).extractToFloat32(numPoints);
 }
 
 // Decodes a Draco mesh bitstream (a .drc file's bytes, or the buffer from a
@@ -103,10 +152,6 @@ export unsafe function decode(
         raw.data = att.extractRaw(numPoints);
         out.attributes.push(raw);
     }
-    out.positions = extract(mesh, out, GeometryAttributeType.POSITION, numPoints);
-    out.normals = extract(mesh, out, GeometryAttributeType.NORMAL, numPoints);
-    out.texcoords = extract(mesh, out, GeometryAttributeType.TEX_COORD, numPoints);
-    out.colors = extract(mesh, out, GeometryAttributeType.COLOR, numPoints);
 
     out.ok = true;
     return out;
