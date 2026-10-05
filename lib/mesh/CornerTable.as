@@ -3,8 +3,8 @@
 //
 // CornerTableBase is the AS stand-in for draco's CornerTableT template
 // parameter: CornerTable and MeshAttributeCornerTable share it so traversers,
-// observers and prediction schemes are written once against virtual dispatch
-// instead of being monomorphized per table type.
+// observers and prediction schemes are written once instead of being
+// monomorphized per table type.
 
 import { IntVector } from "./IntVector";
 
@@ -13,6 +13,14 @@ export const kInvalidVertexIndex: i32 = -1;
 export const kInvalidFaceIndex: i32 = -1;
 
 export abstract class CornerTableBase {
+    // Both table types keep their connectivity here so opposite, vertex and
+    // leftMostCorner, the traversal hot path, need no virtual dispatch.
+    cornerToVertexMap: IntVector = new IntVector();
+    oppositeCorners: IntVector = new IntVector();
+    vertexCorners: IntVector = new IntVector();
+    // Corners opposite an attribute seam; empty on the base table.
+    protected isEdgeOnSeam: Uint8Array = new Uint8Array(0);
+
     numVertices(): i32 {
         return 0;
     }
@@ -26,7 +34,11 @@ export abstract class CornerTableBase {
     }
 
     opposite(corner: i32): i32 {
-        return kInvalidCornerIndex;
+        if (corner == kInvalidCornerIndex ||
+            (corner < this.isEdgeOnSeam.length && unchecked(this.isEdgeOnSeam[corner]) != 0)) {
+            return kInvalidCornerIndex;
+        }
+        return this.oppositeCorners.get(corner);
     }
 
     next(corner: i32): i32 {
@@ -44,7 +56,14 @@ export abstract class CornerTableBase {
     }
 
     vertex(corner: i32): i32 {
-        return kInvalidVertexIndex;
+        if (corner == kInvalidCornerIndex) {
+            return kInvalidVertexIndex;
+        }
+        return this.cornerToVertexMap.get(corner);
+    }
+
+    confidentVertex(corner: i32): i32 {
+        return this.cornerToVertexMap.get(corner);
     }
 
     face(corner: i32): i32 {
@@ -66,7 +85,7 @@ export abstract class CornerTableBase {
     }
 
     leftMostCorner(vert: i32): i32 {
-        return kInvalidCornerIndex;
+        return this.vertexCorners.get(vert);
     }
 
     isDegenerated(face: i32): bool {
@@ -110,11 +129,6 @@ export abstract class CornerTableBase {
 }
 
 export class CornerTable extends CornerTableBase {
-    // Each three consecutive corners represent one face.
-    cornerToVertexMap: IntVector = new IntVector();
-    oppositeCorners: IntVector = new IntVector();
-    vertexCorners: IntVector = new IntVector();
-
     private _numOriginalVertices: i32 = 0;
     private _numDegeneratedFaces: i32 = 0;
     private _numIsolatedVertices: i32 = 0;
@@ -160,28 +174,6 @@ export class CornerTable extends CornerTableBase {
 
     numFaces(): i32 {
         return this.cornerToVertexMap.size() / 3;
-    }
-
-    opposite(corner: i32): i32 {
-        if (corner == kInvalidCornerIndex) {
-            return corner;
-        }
-        return this.oppositeCorners.get(corner);
-    }
-
-    vertex(corner: i32): i32 {
-        if (corner == kInvalidCornerIndex) {
-            return kInvalidVertexIndex;
-        }
-        return this.cornerToVertexMap.get(corner);
-    }
-
-    confidentVertex(corner: i32): i32 {
-        return this.cornerToVertexMap.get(corner);
-    }
-
-    leftMostCorner(vert: i32): i32 {
-        return this.vertexCorners.get(vert);
     }
 
     vertexParent(vert: i32): i32 {
