@@ -19,10 +19,9 @@ import {
     CornerTable,
     VertexCornersIterator,
     kInvalidCornerIndex,
-    kInvalidVertexIndex,
 } from "./CornerTable";
 import { IntVector } from "./IntVector";
-import { Mesh, MeshAttributeElementType } from "./Mesh";
+import { MeshAttributeElementType } from "./Mesh";
 import { MeshAttributeCornerTable } from "./MeshAttributeCornerTable";
 import { MeshAttributeIndicesEncodingData } from "./MeshAttributeIndicesEncodingData";
 import { MeshAttributeIndicesEncodingObserver } from "./MeshAttributeIndicesEncodingObserver";

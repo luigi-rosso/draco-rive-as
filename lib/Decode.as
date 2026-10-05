@@ -14,7 +14,7 @@ import { Mesh } from "./mesh/Mesh";
 import { MeshDecoder } from "./mesh/MeshDecoder";
 import { MeshEdgebreakerDecoder } from "./mesh/MeshEdgebreakerDecoder";
 import { MeshSequentialDecoder } from "./mesh/MeshSequentialDecoder";
-import { PointCloudDecoder, decodeHeader } from "./point_cloud/PointCloudDecoder";
+import { decodeHeader } from "./point_cloud/PointCloudDecoder";
 
 export class DecodeMeshResult {
     mesh: Mesh? = null;
