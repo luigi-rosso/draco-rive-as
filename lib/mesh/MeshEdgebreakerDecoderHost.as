@@ -33,6 +33,11 @@ export abstract class MeshEdgebreakerDecoderHost {
         return -1;
     }
 
+    // True when header counts pass the decoder options' size limits.
+    exceedsLimits(numPoints: u32, numFaces: u32): bool {
+        return false;
+    }
+
     // Receives the sequencer for one attributes decoder slot.
     setAttributesDecoder(attDecoderId: i32, sequencer: PointsSequencer): bool {
         return false;

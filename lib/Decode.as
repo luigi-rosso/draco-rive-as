@@ -40,7 +40,11 @@ function createMeshDecoder(method: i32): MeshDecoder? {
 }
 
 export class Decoder {
-    private options_: DecoderOptions = new DecoderOptions();
+    private options_: DecoderOptions;
+
+    constructor(options: DecoderOptions = new DecoderOptions()) {
+        this.options_ = options;
+    }
 
     getEncodedGeometryType(inBuffer: DecoderBuffer): i32 {
         let header = new DracoHeader();

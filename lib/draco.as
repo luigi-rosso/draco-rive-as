@@ -6,6 +6,9 @@
 import { DecoderBuffer } from "./core/DecoderBuffer";
 import { GeometryAttributeType } from "./attributes/GeometryAttribute";
 import { Decoder } from "./Decode";
+import { DecoderOptions } from "./config/DecoderOptions";
+
+export { DecoderOptions };
 import { DataType } from "./core/DracoTypes";
 import { Mesh } from "./mesh/Mesh";
 
@@ -60,13 +63,14 @@ function extract(
 
 // Decodes a Draco mesh bitstream (a .drc file's bytes, or the buffer from a
 // glTF KHR_draco_mesh_compression bufferView).
-export unsafe function decode(data: ArrayBuffer): DracoMesh {
+export unsafe function decode(
+    data: ArrayBuffer, options: DecoderOptions = new DecoderOptions()): DracoMesh {
     let out = new DracoMesh();
 
     let db = new DecoderBuffer();
     db.init(data);
 
-    let decoder = new Decoder();
+    let decoder = new Decoder(options);
     let result = decoder.decodeMeshFromBuffer(db);
     let mesh = result.mesh;
     if (!result.status.ok() || mesh == null) {

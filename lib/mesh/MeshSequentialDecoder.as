@@ -17,7 +17,8 @@ export class MeshSequentialDecoder extends MeshDecoder {
         }
         // Compressed sequential encoding can only handle (2^32 - 1) / 3
         // indices, and the indices must fit in the remaining bytes.
-        if (numFaces > 0xFFFFFFFF / 3 || numFaces > <u32>buffer.remainingSize() / 3) {
+        if (numFaces > 0xFFFFFFFF / 3 || numFaces > <u32>buffer.remainingSize() / 3 ||
+            this.exceedsLimits(numPoints, numFaces)) {
             return false;
         }
         let connectivityMethod = buffer.decodeUint8();

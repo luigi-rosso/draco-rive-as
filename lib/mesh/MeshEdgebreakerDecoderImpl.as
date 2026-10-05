@@ -247,6 +247,9 @@ export class MeshEdgebreakerDecoderImpl {
         if (numFaces > <u32>(0x7FFFFFFF / 3)) {
             return false; // Draco cannot handle this many faces.
         }
+        if (decoder.exceedsLimits(numEncodedVertices, numFaces)) {
+            return false;
+        }
 
         if (numEncodedVertices > numFaces * 3) {
             return false; // There cannot be more vertices than 3 * numFaces.
