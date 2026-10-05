@@ -21,8 +21,7 @@ export class MeshAttributeIndicesEncodingObserver {
         this.encodingData = encodingData;
     }
 
-    onNewFaceVisited(face: i32): void {}
-
+    @inline
     onNewVertexVisited(vertex: i32, corner: i32): void {
         let pointId = this.mesh.cornerToPointId(corner);
         // Append the visited attribute to the encoding order.
