@@ -1,21 +1,29 @@
-// DracoBench: times draco.decode on the bundled models and prints the same
-// sentinel block the Luau DracoBench.luau emits, plus a DRACO-GOLDEN line per
-// sample from the in-bake comparison against the DracoPy reference fixtures.
+// DracoBench: checks each sample against its DracoPy golden fixture in init,
+// then times draco.decode on the bundled models one model per frame and
+// tracks wasm memory across repeated decodes, so the frame collector gets a
+// boundary between them the way a loading scene would.
 
-import { Protocol, Context } from "rive/host";
+import { Layout, Context } from "rive/host";
 import { decode, DracoMesh } from "./lib/draco";
 
 declare function emscripten_get_now(): f64;
 
 const EPS: f64 = 1e-4;
 
-// { name, iterations }
-const BENCH_NAMES: Array<string> = ["icosphere", "sphere_10k", "sphere_40k", "bunny"];
-const BENCH_ITERS: Array<i32> = [50, 10, 3, 50];
+const BENCH_NAMES: Array<string> = [
+    "icosphere", "sphere_10k", "sphere_40k", "bunny", "avocado", "barramundi",
+    "boombox", "corset", "lantern", "waterbottle",
+];
+const BENCH_ITERS: Array<i32> = [50, 10, 3, 10, 50, 10, 10, 3, 10, 10];
 
 const GOLDEN_NAMES: Array<string> = [
     "tetra", "cube", "icosphere", "texquad", "sphere_10k", "sphere_40k",
 ];
+
+// Repeated decodes of one model, one per frame, to show whether memory
+// settles once the collector runs between them.
+const SOAK_NAME = "corset";
+const SOAK_FRAMES = 30;
 
 // "%.<digits>f" fixed-point formatting (context.log has no printf).
 function fmtFixed(x: f64, digits: i32): string {
@@ -77,7 +85,6 @@ function goldenLine(name: string, drc: ArrayBuffer, golden: ArrayBuffer): string
     let posOff = 12;
     let idxOff = posOff + gNumPoints * 12;
 
-    // Indices: exact.
     let gFaces = Uint32Array.wrap(golden, idxOff, gNumFaces * 3);
     for (let i = 0; i < gNumFaces * 3; i++) {
         if (<u32>m.faces[i] != gFaces[i]) {
@@ -115,19 +122,17 @@ function goldenLine(name: string, drc: ArrayBuffer, golden: ArrayBuffer): string
     return "DRACO-GOLDEN: " + name + verdict + " maxdiff=" + maxDiff.toString();
 }
 
-class Main extends Protocol {
-    ran: bool = false;
+function pagesMB(): string {
+    return fmtFixed(<f64>memory.size() * 65536.0 / 1048576.0, 1) + " MB";
+}
 
-    implementsInit(): bool {
-        return true;
-    }
+export class Main extends Layout {
+    context: Context? = null;
+    step: i32 = 0;
+    soakStartPages: i32 = 0;
 
-    init(context: Context): bool {
-        if (this.ran) {
-            return true;
-        }
-        this.ran = true;
-
+    override init(context: Context): bool {
+        this.context = context;
         for (let i = 0; i < GOLDEN_NAMES.length; i++) {
             let name = GOLDEN_NAMES[i];
             let drc = context.blob(name);
@@ -135,50 +140,90 @@ class Main extends Protocol {
             if (drc == null || golden == null) {
                 context.log("DRACO-GOLDEN: " + name + " FAIL missing blob");
             } else {
-                // Second decode runs on a rewound heap; both passes must
-                // agree or the warm arena corrupted state.
                 let first = goldenLine(name, drc, golden);
-                let mark = __mark();
                 let second = goldenLine(name, drc, golden);
-                let same = first == second;
-                __resetTo(mark);
-                context.log(same ? first : first + " FAIL warm repeat differs");
+                context.log(first == second ? first : first + " FAIL repeat differs");
             }
         }
-
-        context.log("DRACO-BENCH: start");
-        for (let i = 0; i < BENCH_NAMES.length; i++) {
-            let name = BENCH_NAMES[i];
-            let iters = BENCH_ITERS[i];
-            let blob = context.blob(name);
-            if (blob == null) {
-                context.log("DRACO-BENCH: missing " + name);
-                continue;
-            }
-            // Warm-up (parse + allocate) outside the timed loop; the timed
-            // decodes reuse the warm-up's heap region via mark/reset.
-            let mark = __mark();
-            let m: DracoMesh = decode(blob);
-            let t0 = emscripten_get_now();
-            for (let it = 0; it < iters; it++) {
-                __resetTo(mark);
-                m = decode(blob);
-            }
-            let totalMs = emscripten_get_now() - t0;
-            let perMs = totalMs / <f64>iters;
-            let vertsPerSec: f64 = perMs > 0 ? <f64>m.numPoints / (perMs / 1000.0) : 0;
-            context.log(
-                "DRACO-BENCH: " + name + " | " + m.numPoints.toString() + " verts " +
-                m.numFaces.toString() + " tris | " + fmtFixed(perMs, 3) +
-                " ms/decode | " + fmtFixed(vertsPerSec, 0) + " verts/s | " +
-                blob.byteLength.toString() + " B compressed | " + iters.toString() +
-                " iters");
-        }
-        context.log("DRACO-BENCH: done");
+        context.log("DRACO-BENCH: start, heap " + pagesMB());
         return true;
     }
-}
 
-export function generator(): Protocol {
-    return new Main();
+    override advance(seconds: f64): bool {
+        let context = this.context;
+        if (context == null) {
+            return false;
+        }
+        let i = this.step++;
+        if (i < BENCH_NAMES.length) {
+            this.bench(context, BENCH_NAMES[i], BENCH_ITERS[i]);
+            return true;
+        }
+        let s = i - BENCH_NAMES.length;
+        if (s <= SOAK_FRAMES) {
+            this.soak(context, s);
+            return true;
+        }
+        if (s == SOAK_FRAMES + 1) {
+            this.burst(context);
+            return true;
+        }
+        return false;
+    }
+
+    private bench(context: Context, name: string, iters: i32): void {
+        let blob = context.blob(name);
+        if (blob == null) {
+            context.log("DRACO-BENCH: missing " + name);
+            return;
+        }
+        let t0 = emscripten_get_now();
+        let m: DracoMesh = decode(blob);
+        let firstMs = emscripten_get_now() - t0;
+        t0 = emscripten_get_now();
+        for (let it = 0; it < iters; it++) {
+            m = decode(blob);
+        }
+        let perMs = (emscripten_get_now() - t0) / <f64>iters;
+        let mbps: f64 = perMs > 0 ? <f64>blob.byteLength / 1048576.0 / (perMs / 1000.0) : 0;
+        context.log(
+            "DRACO-BENCH: " + name + " | " + m.numPoints.toString() + " verts " +
+            m.numFaces.toString() + " tris | " + blob.byteLength.toString() +
+            " B | first " + fmtFixed(firstMs, 3) + " ms | " + fmtFixed(perMs, 3) +
+            " ms/decode | " + fmtFixed(mbps, 2) + " MB/s | heap " + pagesMB() +
+            (m.ok ? "" : " | FAIL " + m.error));
+    }
+
+    private soak(context: Context, frame: i32): void {
+        let blob = context.blob(SOAK_NAME);
+        if (blob == null) {
+            return;
+        }
+        if (frame == 0) {
+            this.soakStartPages = memory.size();
+        }
+        decode(blob);
+        if (frame == SOAK_FRAMES) {
+            context.log(
+                "DRACO-SOAK: " + SOAK_NAME + " one decode per frame x" +
+                SOAK_FRAMES.toString() + " | heap " +
+                fmtFixed(<f64>this.soakStartPages * 65536.0 / 1048576.0, 1) +
+                " MB -> " + pagesMB());
+        }
+    }
+
+    private burst(context: Context): void {
+        let blob = context.blob(SOAK_NAME);
+        if (blob == null) {
+            return;
+        }
+        let before = pagesMB();
+        for (let i = 0; i < SOAK_FRAMES; i++) {
+            decode(blob);
+        }
+        context.log(
+            "DRACO-SOAK: " + SOAK_NAME + " x" + SOAK_FRAMES.toString() +
+            " in one frame | heap " + before + " -> " + pagesMB());
+        context.log("DRACO-BENCH: done");
+    }
 }
