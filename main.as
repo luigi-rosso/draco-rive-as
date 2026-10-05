@@ -12,9 +12,10 @@ const EPS: f64 = 1e-4;
 
 const BENCH_NAMES: Array<string> = [
     "icosphere", "sphere_10k", "sphere_40k", "bunny", "avocado", "barramundi",
-    "boombox", "corset", "lantern", "waterbottle",
+    "boombox", "corset", "lantern", "waterbottle", "spherecolor_cl10",
+    "seq_spherecolor",
 ];
-const BENCH_ITERS: Array<i32> = [50, 10, 3, 10, 50, 10, 10, 3, 10, 10];
+const BENCH_ITERS: Array<i32> = [50, 10, 3, 10, 50, 10, 10, 3, 10, 10, 10, 10];
 
 const GOLDEN_NAMES: Array<string> = [
     "tetra", "cube", "icosphere", "texquad", "sphere_10k", "sphere_40k",
