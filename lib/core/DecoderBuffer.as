@@ -222,11 +222,12 @@ export class DecoderBuffer {
     }
 
     // Unsigned varint, MSB continuation coding (LEB128). Lives here rather
-    // than in VarintDecoding so the two modules need no import cycle.
-    decodeVarintU64(): u64 {
+    // than in VarintDecoding so the two modules need no import cycle. Like
+    // canonical draco, a u32 takes at most 5 bytes and a u64 at most 10.
+    decodeVarintU64(maxBytes: i32 = 10): u64 {
         let value: u64 = 0;
         let shift = 0;
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < maxBytes; i++) {
             let byte = this.decodeUint8();
             if (this.err) {
                 return 0;
@@ -243,7 +244,7 @@ export class DecoderBuffer {
     }
 
     decodeVarintUint32(): u32 {
-        return <u32>this.decodeVarintU64();
+        return <u32>this.decodeVarintU64(5);
     }
 
     decodeVarintUint64(): u64 {
