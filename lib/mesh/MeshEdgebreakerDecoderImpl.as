@@ -338,9 +338,6 @@ export class MeshEdgebreakerDecoderImpl {
             return false;
         }
 
-        for (let i = 0; i < this.attributeData.length; i++) {
-            this.attributeData[i].attributeSeamCorners.reserve(<i32>numFaces * 3);
-        }
         let numConnectivityVerts = this.decodeConnectivitySymbols(<i32>numEncodedSymbols);
         if (numConnectivityVerts == -1) {
             return false;

@@ -79,9 +79,13 @@ export unsafe function decode(data: ArrayBuffer): DracoMesh {
     out.numPoints = numPoints;
     out.numFaces = numFaces;
 
-    // Faces hold point ids, 3 per corner; copy the exact decoded range.
-    let faces = new Int32Array(numFaces * 3);
-    memory.copy(faces.dataStart, mesh.faces.dataStart, <usize>faces.length << 2);
+    // Faces hold point ids, 3 per corner; copy only when the mesh kept spare
+    // capacity past the decoded range.
+    let faces = mesh.faces;
+    if (faces.length != numFaces * 3) {
+        faces = new Int32Array(numFaces * 3);
+        memory.copy(faces.dataStart, mesh.faces.dataStart, <usize>faces.length << 2);
+    }
     out.faces = faces;
 
     for (let i = 0; i < mesh.numAttributes(); i++) {
