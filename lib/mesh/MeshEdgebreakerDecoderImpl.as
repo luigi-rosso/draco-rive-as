@@ -396,6 +396,7 @@ export class MeshEdgebreakerDecoderImpl {
     // the face was connected to the left edge of a TOPOLOGY_S face.
     // outSplit[0] receives the source edge, outSplit[1] the encoder split
     // symbol id (-1 signals a broken stream).
+    @inline
     private isTopologySplit(encoderSymbolId: i32, outSplit: Int32Array): bool {
         if (this.topologySplitData.length == 0) {
             return false;

@@ -36,18 +36,14 @@ export class BitDecoder {
         return this.bitOffset;
     }
 
+    @inline
     unsafe getBits(nbits: i32): u32 {
-        if (nbits > 32) {
-            this.err = true;
-            return 0;
-        }
-        let p = changetype<usize>(this.buf) + <usize>this.base;
         let off = this.bitOffset;
         let byteOffset = off >> 3;
-        let bitShift = off & 7;
-
         // Fast path: enough bytes remain to read 32 bits safely.
-        if (byteOffset + 4 < this.byteLength) {
+        if (nbits <= 32 && byteOffset + 4 < this.byteLength) {
+            let p = changetype<usize>(this.buf) + <usize>this.base;
+            let bitShift = off & 7;
             let val = load<u32>(p + <usize>byteOffset);
             let result: u32;
             if (nbits > 32 - bitShift) {
@@ -63,6 +59,16 @@ export class BitDecoder {
             }
             return result & ((<u32>1 << nbits) - 1);
         }
+        return this.getBitsSlow(nbits);
+    }
+
+    private unsafe getBitsSlow(nbits: i32): u32 {
+        if (nbits > 32) {
+            this.err = true;
+            return 0;
+        }
+        let p = changetype<usize>(this.buf) + <usize>this.base;
+        let off = this.bitOffset;
 
         // Safe fallback path near the end of the buffer.
         let value: u32 = 0;
@@ -266,6 +272,7 @@ export class DecoderBuffer {
         this.pos += bytesDecoded;
     }
 
+    @inline
     decodeLeastSignificantBits32(nbits: i32): u32 {
         if (!this.bitMode) {
             this.err = true;
