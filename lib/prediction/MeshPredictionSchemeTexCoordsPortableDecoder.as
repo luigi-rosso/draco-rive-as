@@ -91,7 +91,10 @@ export class MeshPredictionSchemeTexCoordsPortableDecoder extends PredictionSche
     decodePredictionData(buffer: DecoderBuffer): bool {
         // Decode the delta-coded orientations.
         let numOrientations = buffer.decodeInt32();
-        if (buffer.err || numOrientations < 0) {
+        // Each corner consumes at most one orientation; canonical draco does
+        // not bound this, so a corrupt count could exhaust wasm memory.
+        if (buffer.err || numOrientations < 0 ||
+            numOrientations > this.meshData.cornerTable().numCorners()) {
             return false;
         }
         this.predictor.resizeOrientations(numOrientations);
