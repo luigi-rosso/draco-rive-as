@@ -40,7 +40,7 @@ export abstract class CornerTableBase {
             (corner < seams.byteLength && load<u8>(seams.dataStart + <usize>corner) != 0)) {
             return kInvalidCornerIndex;
         }
-        return this.oppositeCorners.get(corner);
+        return load<i32>(this.oppositeCorners.ptr + (<usize>corner << 2));
     }
 
     next(corner: i32): i32 {
@@ -57,15 +57,15 @@ export abstract class CornerTableBase {
         return corner % 3 == 0 ? corner + 2 : corner - 1;
     }
 
-    vertex(corner: i32): i32 {
+    unsafe vertex(corner: i32): i32 {
         if (corner == kInvalidCornerIndex) {
             return kInvalidVertexIndex;
         }
-        return this.cornerToVertexMap.get(corner);
+        return load<i32>(this.cornerToVertexMap.ptr + (<usize>corner << 2));
     }
 
-    confidentVertex(corner: i32): i32 {
-        return this.cornerToVertexMap.get(corner);
+    unsafe confidentVertex(corner: i32): i32 {
+        return load<i32>(this.cornerToVertexMap.ptr + (<usize>corner << 2));
     }
 
     face(corner: i32): i32 {
@@ -86,8 +86,8 @@ export abstract class CornerTableBase {
         return corner % 3;
     }
 
-    leftMostCorner(vert: i32): i32 {
-        return this.vertexCorners.get(vert);
+    unsafe leftMostCorner(vert: i32): i32 {
+        return load<i32>(this.vertexCorners.ptr + (<usize>vert << 2));
     }
 
     isDegenerated(face: i32): bool {
@@ -642,6 +642,7 @@ export class VertexCornersIterator {
         return this._corner == kInvalidCornerIndex;
     }
 
+    @inline
     next(): void {
         if (this.leftTraversal) {
             this._corner = this.table.swingLeft(this._corner);
