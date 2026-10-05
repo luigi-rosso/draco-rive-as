@@ -158,6 +158,7 @@ export class PointAttribute extends GeometryAttribute {
     }
 
     // Per-component read as f64 for the extract loops (attIndex pre-mapped).
+    @inline
     private unsafe readComponent(attIndex: i32, component: i32): f64 {
         let buf = this.buffer;
         if (buf == null) {

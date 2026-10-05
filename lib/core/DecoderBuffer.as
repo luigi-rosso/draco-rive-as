@@ -137,6 +137,7 @@ export class DecoderBuffer {
         return changetype<usize>(this.buf) + <usize>(this.base + this.pos);
     }
 
+    @inline
     unsafe decodeUint8(): u32 {
         if (this.pos + 1 > this.dataSize) {
             this.err = true;
@@ -157,6 +158,7 @@ export class DecoderBuffer {
         return val;
     }
 
+    @inline
     unsafe decodeUint16(): u32 {
         if (this.pos + 2 > this.dataSize) {
             this.err = true;
@@ -167,6 +169,7 @@ export class DecoderBuffer {
         return val;
     }
 
+    @inline
     unsafe decodeUint32(): u32 {
         if (this.pos + 4 > this.dataSize) {
             this.err = true;
