@@ -19,6 +19,10 @@ int main(int argc, char **argv) {
     return 1;
   }
   std::ifstream in(argv[1], std::ios::binary);
+  if (!in) {
+    fprintf(stderr, "%s: cannot read\n", argv[1]);
+    return 1;
+  }
   std::vector<char> data((std::istreambuf_iterator<char>(in)),
                          std::istreambuf_iterator<char>());
   draco::DecoderBuffer buffer;
@@ -31,6 +35,10 @@ int main(int argc, char **argv) {
   }
   std::unique_ptr<draco::Mesh> mesh = std::move(status).value();
   FILE *f = fopen(argv[2], "wb");
+  if (!f) {
+    fprintf(stderr, "%s: cannot write\n", argv[2]);
+    return 1;
+  }
   const uint32_t numPoints = mesh->num_points();
   put(f, numPoints);
   put(f, mesh->num_faces());

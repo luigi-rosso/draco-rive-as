@@ -1,9 +1,10 @@
-// Byte-exact gate: decodes each .drc with the AS decoder (dracoC.wasm, built
-// by golden.mjs) and with canonical draco (cppref/dump), then requires the
-// faces and every attribute's raw values to match exactly. Extra .drc
-// directories come from DRACO_EXTRA (colon separated).
+// Byte-exact gate: decodes each .drc with the AS decoder (WASM, default
+// dracoC.wasm from golden.mjs) and with canonical draco (cppref/dump), then
+// requires the faces and every attribute's raw values to match exactly, or
+// both decoders to reject the file. Extra .drc directories come from
+// DRACO_EXTRA (colon separated).
 
-import { execFileSync } from 'child_process';
+import { spawnSync } from 'child_process';
 import { readFileSync, readdirSync, mkdirSync } from 'fs';
 import { dirname, join, basename } from 'path';
 import { fileURLToPath } from 'url';
@@ -16,7 +17,7 @@ const dirs = [join(HERE, '..', 'assets'), ...(process.env.DRACO_EXTRA ?? '').spl
 const files = dirs.flatMap(d => readdirSync(d).filter(f => f.endsWith('.drc')).sort().map(f => join(d, f)));
 
 const { instance } = await WebAssembly.instantiate(
-    readFileSync(join(HERE, 'dracoC.wasm')),
+    readFileSync(process.env.WASM ?? join(HERE, 'dracoC.wasm')),
     new Proxy({}, { get: () => new Proxy({}, { get: () => () => 0 }) }));
 const e = instance.exports;
 
@@ -24,14 +25,25 @@ let failures = 0;
 for (const file of files) {
     const name = basename(file, '.drc');
     const refPath = join(OUT, name + '.bin');
-    execFileSync(join(HERE, 'cppref', 'dump'), [file, refPath]);
-    const ref = readFileSync(refPath);
+    const canon = spawnSync(join(HERE, 'cppref', 'dump'), [file, refPath], { encoding: 'utf8' });
     const drc = readFileSync(file);
 
     const ptr = e.cAlloc(drc.length);
     new Uint8Array(e.memory.buffer, ptr, drc.length).set(drc);
-    if (!e.cDecode()) {
-        const err = Buffer.from(e.memory.buffer, e.cErrorPtr(), e.cErrorLen() * 2).toString('utf16le');
+    const decoded = e.cDecode();
+    const err = decoded ? '' : Buffer.from(e.memory.buffer, e.cErrorPtr(), e.cErrorLen() * 2).toString('utf16le');
+    if (canon.status !== 0) {
+        const canonErr = canon.stderr.trim().split(': ').pop();
+        if (decoded) {
+            console.log(`${name}: FAIL decoded but canonical draco rejects it: ${canonErr}`);
+            failures++;
+        } else {
+            console.log(`${name}: OK both reject (${err} / ${canonErr})`);
+        }
+        continue;
+    }
+    const ref = readFileSync(refPath);
+    if (!decoded) {
         console.log(`${name}: FAIL decode error: ${err}`);
         failures++;
         continue;

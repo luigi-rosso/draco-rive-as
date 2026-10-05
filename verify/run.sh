@@ -29,4 +29,8 @@ node verify2.mjs
 node verify3.mjs
 node golden.mjs
 node exact.mjs
+node fuzz.mjs
+"$RASC" ../_verifyC.as --path "$AS_STD" --lib "$AS_STD/assembly" --runtime stub -O --dangerously-fast -o dracoC_O.wasm
+WASM=dracoC_O.wasm node exact.mjs
+WASM=dracoC_O.wasm node fuzz.mjs
 echo "verification: all green"
