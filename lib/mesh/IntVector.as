@@ -18,10 +18,11 @@ export class IntVector {
         return this._size;
     }
 
+    // Doubles for push, but a large jump allocates exactly what it asks for.
     private grow(minCapacity: i32): void {
-        let cap = this._data.length < 8 ? 8 : this._data.length;
-        while (cap < minCapacity) {
-            cap <<= 1;
+        let cap = max(this._data.length << 1, 8);
+        if (cap < minCapacity) {
+            cap = minCapacity;
         }
         let grown = new Int32Array(cap);
         grown.set(this._data);
