@@ -9,7 +9,6 @@ import { kInvalidVertexIndex } from "./CornerTable";
 import { IntVector } from "./IntVector";
 import { Mesh } from "./Mesh";
 import { MeshAttributeIndicesEncodingData } from "./MeshAttributeIndicesEncodingData";
-import { DepthFirstTraverser } from "./DepthFirstTraverser";
 import { TraverserBase } from "./TraverserBase";
 
 export class MeshTraversalSequencer extends PointsSequencer {
@@ -76,10 +75,9 @@ export class MeshTraversalSequencer extends PointsSequencer {
 
         traverser.onTraversalStart();
         let numFaces = traverser.cornerTable().numFaces();
-        // Depth first returns at once on a visited face, so skip its call.
-        let skipVisited = traverser instanceof DepthFirstTraverser;
+        // A traversal from a visited face reaches nothing new, so skip its call.
         for (let i = 0; i < numFaces; i++) {
-            if (skipVisited && traverser.isFaceVisited(i)) {
+            if (traverser.isFaceVisited(i)) {
                 continue;
             }
             if (!traverser.traverseFromCorner(3 * i)) {
