@@ -6,7 +6,6 @@ import { DecoderBuffer } from "../core/DecoderBuffer";
 import { DataType } from "../core/DracoTypes";
 import { AttributeQuantizationTransform } from "./AttributeQuantizationTransform";
 import { SequentialIntegerAttributeDecoder } from "./SequentialIntegerAttributeDecoder";
-import { PointAttribute } from "./PointAttribute";
 import { PointCloudDecoder } from "../point_cloud/PointCloudDecoder";
 
 export class SequentialQuantizationAttributeDecoder extends SequentialIntegerAttributeDecoder {

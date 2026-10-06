@@ -15,7 +15,7 @@ import { Mesh } from "./lib/mesh/Mesh";
 
 // ---- Wrap + delta vectors from tests/prediction_test.luau ----
 
-function makeWrap(minV: i32, maxV: i32): PredictionSchemeWrapDecodingTransform {
+unsafe function makeWrap(minV: i32, maxV: i32): PredictionSchemeWrapDecodingTransform {
     let bytes = new ArrayBuffer(8);
     store<i32>(changetype<usize>(bytes), minV);
     store<i32>(changetype<usize>(bytes) + 4, maxV);
@@ -90,7 +90,7 @@ export function runLuauVectors(): i32 {
 
 let octaTransform = new PredictionSchemeNormalOctahedronCanonicalizedDecodingTransform();
 
-export function octaSetup(qb: i32): bool {
+export unsafe function octaSetup(qb: i32): bool {
     let maxq = (1 << qb) - 1;
     let bytes = new ArrayBuffer(8);
     store<i32>(changetype<usize>(bytes), maxq);
@@ -371,7 +371,7 @@ let texPredictor: MeshPredictionSchemeTexCoordsPortablePredictor? = null;
 let gnPredictor: MeshPredictionSchemeGeometricNormalPredictorArea? = null;
 let gnOut = new Int32Array(3);
 
-export function predSetup(): i32 {
+export unsafe function predSetup(): i32 {
     let nv = ct.numVertices();
     let pa = new PointAttribute();
     pa.initValues(GeometryAttributeType.POSITION, 3, DataType.INT32, false, nv);

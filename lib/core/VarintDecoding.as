@@ -17,7 +17,7 @@ export function decodeVarintUnsigned(db: DecoderBuffer): u64 {
 // Applies zigzag decoding. The zigzag operates on the low 32 bits, matching
 // the Luau port's bit32 semantics.
 export function decodeVarintSigned(db: DecoderBuffer): i32 {
-    let value = db.decodeVarintU64();
+    let value = db.decodeVarintU64(5);
     if (db.err) {
         return 0;
     }

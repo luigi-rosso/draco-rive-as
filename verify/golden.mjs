@@ -11,9 +11,9 @@ import { homedir } from 'os';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const RASC = process.env.RASC ??
-    join(homedir(), 'Projects/rive-fields_as/packages/assemblyscript/out/release/rasc');
+    join(homedir(), 'Projects/rive/packages/rasc/animascript/out/release/rasc');
 const AS_STD = process.env.AS_STD ??
-    join(homedir(), 'Projects/rive-fields_as/packages/assemblyscript/std');
+    join(homedir(), 'Projects/rive/packages/rasc/animascript/std');
 const WASM = join(HERE, 'dracoC.wasm');
 
 execFileSync(RASC, [

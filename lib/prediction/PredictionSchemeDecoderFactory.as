@@ -17,6 +17,7 @@ import {
     PredictionSchemeDeltaDecoderNormalOcta,
 } from "./PredictionSchemeDeltaDecoder";
 import { MeshPredictionSchemeParallelogramDecoder } from "./MeshPredictionSchemeParallelogramDecoder";
+import { MeshPredictionSchemeConstrainedMultiParallelogramDecoder } from "./MeshPredictionSchemeConstrainedMultiParallelogramDecoder";
 import { MeshPredictionSchemeTexCoordsPortableDecoder } from "./MeshPredictionSchemeTexCoordsPortableDecoder";
 import { MeshPredictionSchemeGeometricNormalDecoder } from "./MeshPredictionSchemeGeometricNormalDecoder";
 
@@ -28,11 +29,14 @@ export function createMeshPredictionSchemeWrap(
     meshData: MeshPredictionSchemeData): PredictionSchemeDecoder? {
     if (method == PredictionSchemeMethod.MESH_PREDICTION_PARALLELOGRAM) {
         return new MeshPredictionSchemeParallelogramDecoder(attribute, transform, meshData);
+    } else if (method == PredictionSchemeMethod.MESH_PREDICTION_CONSTRAINED_MULTI_PARALLELOGRAM) {
+        return new MeshPredictionSchemeConstrainedMultiParallelogramDecoder(
+            attribute, transform, meshData);
     } else if (method == PredictionSchemeMethod.MESH_PREDICTION_TEX_COORDS_PORTABLE) {
         return new MeshPredictionSchemeTexCoordsPortableDecoder(attribute, transform, meshData);
     }
-    // MULTI_PARALLELOGRAM and CONSTRAINED_MULTI_PARALLELOGRAM are not in the
-    // decoded subset.
+    // MULTI_PARALLELOGRAM and TEX_COORDS_DEPRECATED only appear in pre-2.2
+    // bitstreams, which this port does not read.
     return null;
 }
 

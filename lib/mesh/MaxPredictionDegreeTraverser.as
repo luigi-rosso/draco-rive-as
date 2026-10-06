@@ -57,7 +57,6 @@ export class MaxPredictionDegreeTraverser extends TraverserBase {
             while (true) {
                 faceId = cornerId / 3;
                 this.markFaceVisited(faceId);
-                observer.onNewFaceVisited(faceId);
 
                 let vertId = table.vertex(cornerId);
                 if (!this.isVertexVisited(vertId)) {

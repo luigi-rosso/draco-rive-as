@@ -1,6 +1,6 @@
 // Ported from draco compression/decode.h/.cc: header peek + decoder dispatch.
-// Only the edgebreaker triangular mesh path is implemented; the other method
-// bytes keep their dispatch slots and report a clear unsupported error.
+// Triangular meshes only, sequential or edgebreaker; point clouds report a
+// clear unsupported error.
 
 import {
     DracoHeader,
@@ -13,7 +13,8 @@ import { Status, StatusCode } from "./core/Status";
 import { Mesh } from "./mesh/Mesh";
 import { MeshDecoder } from "./mesh/MeshDecoder";
 import { MeshEdgebreakerDecoder } from "./mesh/MeshEdgebreakerDecoder";
-import { PointCloudDecoder, decodeHeader } from "./point_cloud/PointCloudDecoder";
+import { MeshSequentialDecoder } from "./mesh/MeshSequentialDecoder";
+import { decodeHeader } from "./point_cloud/PointCloudDecoder";
 
 export class DecodeMeshResult {
     mesh: Mesh? = null;
@@ -31,7 +32,7 @@ function peekHeader(inBuffer: DecoderBuffer, outHeader: DracoHeader): Status {
 
 function createMeshDecoder(method: i32): MeshDecoder? {
     if (method == MeshEncoderMethod.MESH_SEQUENTIAL_ENCODING) {
-        return null; // Sequential mesh encoding is not in the ported subset.
+        return new MeshSequentialDecoder();
     } else if (method == MeshEncoderMethod.MESH_EDGEBREAKER_ENCODING) {
         return new MeshEdgebreakerDecoder();
     }
@@ -39,7 +40,11 @@ function createMeshDecoder(method: i32): MeshDecoder? {
 }
 
 export class Decoder {
-    private options_: DecoderOptions = new DecoderOptions();
+    private options_: DecoderOptions;
+
+    constructor(options: DecoderOptions = new DecoderOptions()) {
+        this.options_ = options;
+    }
 
     getEncodedGeometryType(inBuffer: DecoderBuffer): i32 {
         let header = new DracoHeader();

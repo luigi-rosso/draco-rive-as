@@ -19,10 +19,9 @@ import {
     CornerTable,
     VertexCornersIterator,
     kInvalidCornerIndex,
-    kInvalidVertexIndex,
 } from "./CornerTable";
 import { IntVector } from "./IntVector";
-import { Mesh, MeshAttributeElementType } from "./Mesh";
+import { MeshAttributeElementType } from "./Mesh";
 import { MeshAttributeCornerTable } from "./MeshAttributeCornerTable";
 import { MeshAttributeIndicesEncodingData } from "./MeshAttributeIndicesEncodingData";
 import { MeshAttributeIndicesEncodingObserver } from "./MeshAttributeIndicesEncodingObserver";
@@ -248,6 +247,9 @@ export class MeshEdgebreakerDecoderImpl {
         if (numFaces > <u32>(0x7FFFFFFF / 3)) {
             return false; // Draco cannot handle this many faces.
         }
+        if (decoder.exceedsLimits(numEncodedVertices, numFaces)) {
+            return false;
+        }
 
         if (numEncodedVertices > numFaces * 3) {
             return false; // There cannot be more vertices than 3 * numFaces.
@@ -338,9 +340,6 @@ export class MeshEdgebreakerDecoderImpl {
             return false;
         }
 
-        for (let i = 0; i < this.attributeData.length; i++) {
-            this.attributeData[i].attributeSeamCorners.reserve(<i32>numFaces * 3);
-        }
         let numConnectivityVerts = this.decodeConnectivitySymbols(<i32>numEncodedSymbols);
         if (numConnectivityVerts == -1) {
             return false;
@@ -396,6 +395,7 @@ export class MeshEdgebreakerDecoderImpl {
     // the face was connected to the left edge of a TOPOLOGY_S face.
     // outSplit[0] receives the source edge, outSplit[1] the encoder split
     // symbol id (-1 signals a broken stream).
+    @inline
     private isTopologySplit(encoderSymbolId: i32, outSplit: Int32Array): bool {
         if (this.topologySplitData.length == 0) {
             return false;

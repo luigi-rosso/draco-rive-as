@@ -7,64 +7,60 @@
 
 import { PointAttribute } from "../attributes/PointAttribute";
 import { VertexCornersIterator } from "../mesh/CornerTable";
+import { MeshPredictionPositionReader } from "./MeshPredictionPositionReader";
 import { MeshPredictionSchemeData } from "./MeshPredictionSchemeData";
 
 export class MeshPredictionSchemeGeometricNormalPredictorArea {
-    private posAttribute: PointAttribute? = null;
-    private entryToPointIdMap: Int32Array = new Int32Array(0);
+    private pos: MeshPredictionPositionReader = new MeshPredictionPositionReader();
     private meshData: MeshPredictionSchemeData;
-    // Scratch for position reads.
-    private posVal: Float64Array = new Float64Array(3);
+    private cit: VertexCornersIterator? = null;
 
     constructor(meshData: MeshPredictionSchemeData) {
         this.meshData = meshData;
     }
 
     setPositionAttribute(positionAttribute: PointAttribute): void {
-        this.posAttribute = positionAttribute;
+        this.pos.attribute = positionAttribute;
     }
 
     setEntryToPointIdMap(map: Int32Array): void {
-        this.entryToPointIdMap = map;
+        this.pos.entryToPointIdMap = map;
     }
 
     isInitialized(): bool {
-        if (this.posAttribute == null) {
+        if (this.pos.attribute == null) {
             return false;
         }
-        if (this.entryToPointIdMap.length == 0) {
+        if (this.pos.entryToPointIdMap.length == 0) {
             return false;
         }
         return true;
     }
 
-    // Loads the position for |dataId| into posVal (quantized integers, exact
-    // in f64; matches C++ ConvertValue to int64).
-    private loadPositionForDataId(dataId: i32): void {
-        let pointId = this.entryToPointIdMap[dataId];
-        let att = this.posAttribute!;
-        att.convertValue(<i32>att.mappedIndex(pointId), this.posVal);
-    }
-
     private loadPositionForCorner(ci: i32): void {
-        let table = this.meshData.cornerTable();
-        let vertId = table.vertex(ci);
-        let dataId = this.meshData.vertexToDataMap()[vertId];
-        this.loadPositionForDataId(dataId);
+        let vertId = this.meshData.cornerTable().vertex(ci);
+        this.pos.load(this.meshData.vertexToDataMap()[vertId]);
     }
 
     // Computes the predicted normal (not yet octahedral) for |cornerId| into
     // prediction[0..2].
     computePredictedValue(cornerId: i32, prediction: Int32Array): void {
         let table = this.meshData.cornerTable();
+        let pos = this.pos;
         // The predicted normal comes from the surrounding triangles of the
         // given corner table connectivity.
-        let cit = new VertexCornersIterator(table, cornerId);
+        let cit = this.cit;
+        if (cit == null) {
+            cit = new VertexCornersIterator(table, cornerId);
+            this.cit = cit;
+        } else {
+            cit.resetFromCorner(table, cornerId);
+        }
         // The central vertex position does not change in the loop.
         this.loadPositionForCorner(cornerId);
-        let centX = <i64>this.posVal[0];
-        let centY = <i64>this.posVal[1];
-        let centZ = <i64>this.posVal[2];
+        let centX = pos.x;
+        let centY = pos.y;
+        let centZ = pos.z;
 
         let normalX: i64 = 0;
         let normalY: i64 = 0;
@@ -74,13 +70,13 @@ export class MeshPredictionSchemeGeometricNormalPredictorArea {
             let cNext = table.next(cit.corner());
             let cPrev = table.previous(cit.corner());
             this.loadPositionForCorner(cNext);
-            let dNextX = <i64>this.posVal[0] - centX;
-            let dNextY = <i64>this.posVal[1] - centY;
-            let dNextZ = <i64>this.posVal[2] - centZ;
+            let dNextX = pos.x - centX;
+            let dNextY = pos.y - centY;
+            let dNextZ = pos.z - centZ;
             this.loadPositionForCorner(cPrev);
-            let dPrevX = <i64>this.posVal[0] - centX;
-            let dPrevY = <i64>this.posVal[1] - centY;
-            let dPrevZ = <i64>this.posVal[2] - centZ;
+            let dPrevX = pos.x - centX;
+            let dPrevY = pos.y - centY;
+            let dPrevZ = pos.z - centZ;
 
             // Cross product; i64 addition wraps like the C++ unsigned math.
             normalX += dNextY * dPrevZ - dNextZ * dPrevY;

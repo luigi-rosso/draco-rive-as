@@ -57,6 +57,7 @@ export class MeshEdgebreakerTraversalDecoder {
     }
 
     // The next edgebreaker symbol reached during the traversal.
+    @inline
     decodeSymbol(): u32 {
         let symbol = this.symbolBuffer.decodeLeastSignificantBits32(1);
         if (symbol == <u32>EdgebreakerTopologyBitPattern.TOPOLOGY_C) {

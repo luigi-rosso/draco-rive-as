@@ -6,9 +6,9 @@ artboard:
   background: "#101014"
 exclude:
   - verify
+  - _verifyB.as
+  - _verifyC.as
 output:
   dir: build
 scripting: wasm
-scriptVm: /Users/luigi/Projects/rive-wamr_vm/packages/luau_wasm/out/host/vm_host.wasm
-rascStd: /Users/luigi/Projects/rive-fields_as/packages/assemblyscript/std
 dangerouslyFast: true

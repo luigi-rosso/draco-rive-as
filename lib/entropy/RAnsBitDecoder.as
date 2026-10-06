@@ -8,7 +8,8 @@ import { AnsDecoder, ansReadInit, ansReadEnd, ANS_L_BASE, ANS_P8_PRECISION } fro
 export class RAnsBitDecoder {
     ansDecoder: AnsDecoder = new AnsDecoder();
     probZero: u32 = 0;
-    // ANS_P8_PRECISION - probZero, precomputed.
+    // ANS_P8_PRECISION - probZero, precomputed. Canonical draco holds it in
+    // a uint8, so a zero probZero wraps to 0.
     p: u32 = 0;
 
     // Returns false when the data is invalid.
@@ -20,7 +21,7 @@ export class RAnsBitDecoder {
             return false;
         }
         this.probZero = probZero;
-        this.p = ANS_P8_PRECISION - probZero;
+        this.p = (ANS_P8_PRECISION - probZero) & 0xFF;
 
         let sizeInBytes = sourceBuffer.decodeVarintUint32();
         if (sourceBuffer.err) {
@@ -39,6 +40,7 @@ export class RAnsBitDecoder {
         return true;
     }
 
+    @inline
     decodeNextBit(): bool {
         let ans = this.ansDecoder;
         let p = this.p;

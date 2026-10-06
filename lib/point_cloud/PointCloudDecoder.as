@@ -209,6 +209,11 @@ export class PointCloudDecoder extends MeshEdgebreakerDecoderHost {
         return this.options_;
     }
 
+    exceedsLimits(numPoints: u32, numFaces: u32): bool {
+        let options = this.options_;
+        return options != null && (numPoints > options.maxPoints || numFaces > options.maxFaces);
+    }
+
     // Virtuals for the prediction scheme factory; the mesh decoders override.
     getCornerTable(): CornerTable? {
         return null;

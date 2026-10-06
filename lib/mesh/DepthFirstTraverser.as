@@ -16,7 +16,6 @@ export class DepthFirstTraverser extends TraverserBase {
         let observer = this.observer();
 
         this.cornerTraversalStack.clear();
-        this.cornerTraversalStack.reserve(table.numFaces());
         this.cornerTraversalStack.push(cornerId);
         // For the first face, check the remaining corners as they may not be
         // processed yet.
@@ -46,7 +45,6 @@ export class DepthFirstTraverser extends TraverserBase {
             }
             while (true) {
                 this.markFaceVisited(faceId);
-                observer.onNewFaceVisited(faceId);
                 let vertId = table.vertex(cornerId);
                 if (vertId == kInvalidVertexIndex) {
                     return false;

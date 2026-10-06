@@ -7,16 +7,12 @@ import { IntVector } from "./IntVector";
 import { Mesh } from "./Mesh";
 import { PointAttribute } from "../attributes/PointAttribute";
 
+// vertexCorners holds the left-most corner per vertex: a corner whose
+// swingLeft is invalid (next to a boundary or seam), or any corner when no
+// such corner exists. oppositeCorners is the base table's own vector.
 export class MeshAttributeCornerTable extends CornerTableBase {
-    private isEdgeOnSeam: Uint8Array = new Uint8Array(0);
     private isVertexOnSeam: Uint8Array = new Uint8Array(0);
     private _noInteriorSeams: bool = true;
-
-    private cornerToVertexMap: Int32Array = new Int32Array(0);
-
-    // Left-most corner per vertex: a corner whose swingLeft is invalid (next
-    // to a boundary or seam), or any corner when no such corner exists.
-    private vertexToLeftMostCornerMap: IntVector = new IntVector();
 
     // Attribute entry id per vertex, exposed through vertexParent().
     private vertexToAttributeEntryIdMap: IntVector = new IntVector();
@@ -26,12 +22,12 @@ export class MeshAttributeCornerTable extends CornerTableBase {
     initEmpty(table: CornerTable): bool {
         this.isEdgeOnSeam = new Uint8Array(table.numCorners());
         this.isVertexOnSeam = new Uint8Array(table.numVertices());
-        this.cornerToVertexMap = new Int32Array(table.numCorners());
-        this.cornerToVertexMap.fill(kInvalidVertexIndex);
+        this.cornerToVertexMap.assign(table.numCorners(), kInvalidVertexIndex);
+        this.oppositeCorners = table.oppositeCorners;
         this.vertexToAttributeEntryIdMap.clear();
         this.vertexToAttributeEntryIdMap.reserve(table.numVertices());
-        this.vertexToLeftMostCornerMap.clear();
-        this.vertexToLeftMostCornerMap.reserve(table.numVertices());
+        this.vertexCorners.clear();
+        this.vertexCorners.reserve(table.numVertices());
         this._cornerTable = table;
         this._noInteriorSeams = true;
         return true;
@@ -107,7 +103,7 @@ export class MeshAttributeCornerTable extends CornerTableBase {
         let table = this._cornerTable!;
         let initVertexToAttributeEntryMap = mesh != null && att != null;
         this.vertexToAttributeEntryIdMap.clear();
-        this.vertexToLeftMostCornerMap.clear();
+        this.vertexCorners.clear();
         let numNewVertices = 0;
         let numVertices = table.numVertices();
         for (let v = 0; v < numVertices; v++) {
@@ -139,8 +135,8 @@ export class MeshAttributeCornerTable extends CornerTableBase {
                     }
                 }
             }
-            unchecked(this.cornerToVertexMap[firstC] = firstVertId);
-            this.vertexToLeftMostCornerMap.push(firstC);
+            this.cornerToVertexMap.set(firstC, firstVertId);
+            this.vertexCorners.push(firstC);
             actC = table.swingRight(firstC);
             while (actC != kInvalidCornerIndex && actC != firstC) {
                 if (this.isCornerOppositeToSeamEdge(table.next(actC))) {
@@ -152,9 +148,9 @@ export class MeshAttributeCornerTable extends CornerTableBase {
                         // Identity mapping.
                         this.vertexToAttributeEntryIdMap.push(firstVertId);
                     }
-                    this.vertexToLeftMostCornerMap.push(actC);
+                    this.vertexCorners.push(actC);
                 }
-                unchecked(this.cornerToVertexMap[actC] = firstVertId);
+                this.cornerToVertexMap.set(actC, firstVertId);
                 actC = table.swingRight(actC);
             }
         }
@@ -163,13 +159,6 @@ export class MeshAttributeCornerTable extends CornerTableBase {
 
     isCornerOppositeToSeamEdge(corner: i32): bool {
         return unchecked(this.isEdgeOnSeam[corner]) != 0;
-    }
-
-    opposite(corner: i32): i32 {
-        if (corner == kInvalidCornerIndex || this.isCornerOppositeToSeamEdge(corner)) {
-            return kInvalidCornerIndex;
-        }
-        return this._cornerTable!.opposite(corner);
     }
 
     // True when the corner is attached to any attribute seam.
@@ -189,21 +178,9 @@ export class MeshAttributeCornerTable extends CornerTableBase {
         return this._cornerTable!.numCorners();
     }
 
-    vertex(corner: i32): i32 {
-        return unchecked(this.cornerToVertexMap[corner]);
-    }
-
-    confidentVertex(corner: i32): i32 {
-        return unchecked(this.cornerToVertexMap[corner]);
-    }
-
     // The attribute entry id associated to the given vertex.
     vertexParent(vert: i32): i32 {
         return this.vertexToAttributeEntryIdMap.get(vert);
-    }
-
-    leftMostCorner(vert: i32): i32 {
-        return this.vertexToLeftMostCornerMap.get(vert);
     }
 
     isDegenerated(face: i32): bool {

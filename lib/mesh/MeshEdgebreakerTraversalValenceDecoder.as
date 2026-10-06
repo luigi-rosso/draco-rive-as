@@ -83,6 +83,7 @@ export class MeshEdgebreakerTraversalValenceDecoder extends MeshEdgebreakerTrave
         return true;
     }
 
+    @inline
     decodeSymbol(): u32 {
         // First check if we have a valid context.
         if (this.activeContext != -1) {
@@ -103,6 +104,7 @@ export class MeshEdgebreakerTraversalValenceDecoder extends MeshEdgebreakerTrave
         return <u32>this.lastSymbol;
     }
 
+    @inline
     newActiveCornerReached(corner: i32): void {
         let table = this.cornerTable!;
         let next = table.next(corner);

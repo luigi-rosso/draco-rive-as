@@ -36,18 +36,14 @@ export class BitDecoder {
         return this.bitOffset;
     }
 
+    @inline
     unsafe getBits(nbits: i32): u32 {
-        if (nbits > 32) {
-            this.err = true;
-            return 0;
-        }
-        let p = changetype<usize>(this.buf) + <usize>this.base;
         let off = this.bitOffset;
         let byteOffset = off >> 3;
-        let bitShift = off & 7;
-
         // Fast path: enough bytes remain to read 32 bits safely.
-        if (byteOffset + 4 < this.byteLength) {
+        if (nbits <= 32 && byteOffset + 4 < this.byteLength) {
+            let p = changetype<usize>(this.buf) + <usize>this.base;
+            let bitShift = off & 7;
             let val = load<u32>(p + <usize>byteOffset);
             let result: u32;
             if (nbits > 32 - bitShift) {
@@ -63,6 +59,16 @@ export class BitDecoder {
             }
             return result & ((<u32>1 << nbits) - 1);
         }
+        return this.getBitsSlow(nbits);
+    }
+
+    private unsafe getBitsSlow(nbits: i32): u32 {
+        if (nbits > 32) {
+            this.err = true;
+            return 0;
+        }
+        let p = changetype<usize>(this.buf) + <usize>this.base;
+        let off = this.bitOffset;
 
         // Safe fallback path near the end of the buffer.
         let value: u32 = 0;
@@ -131,6 +137,7 @@ export class DecoderBuffer {
         return changetype<usize>(this.buf) + <usize>(this.base + this.pos);
     }
 
+    @inline
     unsafe decodeUint8(): u32 {
         if (this.pos + 1 > this.dataSize) {
             this.err = true;
@@ -151,6 +158,7 @@ export class DecoderBuffer {
         return val;
     }
 
+    @inline
     unsafe decodeUint16(): u32 {
         if (this.pos + 2 > this.dataSize) {
             this.err = true;
@@ -161,6 +169,7 @@ export class DecoderBuffer {
         return val;
     }
 
+    @inline
     unsafe decodeUint32(): u32 {
         if (this.pos + 4 > this.dataSize) {
             this.err = true;
@@ -213,11 +222,12 @@ export class DecoderBuffer {
     }
 
     // Unsigned varint, MSB continuation coding (LEB128). Lives here rather
-    // than in VarintDecoding so the two modules need no import cycle.
-    decodeVarintU64(): u64 {
+    // than in VarintDecoding so the two modules need no import cycle. Like
+    // canonical draco, a u32 takes at most 5 bytes and a u64 at most 10.
+    decodeVarintU64(maxBytes: i32 = 10): u64 {
         let value: u64 = 0;
         let shift = 0;
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < maxBytes; i++) {
             let byte = this.decodeUint8();
             if (this.err) {
                 return 0;
@@ -234,7 +244,7 @@ export class DecoderBuffer {
     }
 
     decodeVarintUint32(): u32 {
-        return <u32>this.decodeVarintU64();
+        return <u32>this.decodeVarintU64(5);
     }
 
     decodeVarintUint64(): u64 {
@@ -266,6 +276,7 @@ export class DecoderBuffer {
         this.pos += bytesDecoded;
     }
 
+    @inline
     decodeLeastSignificantBits32(nbits: i32): u32 {
         if (!this.bitMode) {
             this.err = true;

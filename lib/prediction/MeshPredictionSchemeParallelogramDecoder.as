@@ -15,6 +15,7 @@ import { PredictionSchemeWrapDecodingTransform } from "./PredictionSchemeWrapDec
 // into |outPrediction|. Returns false when the prediction cannot be computed,
 // e.g. because not all entry points are available yet
 // (C++ ComputeParallelogramPrediction).
+@inline
 export unsafe function computeParallelogramPrediction(
     dataEntryId: i32, ci: i32, table: CornerTableBase,
     vertexToDataMap: Int32Array, inData: Int32Array, numComponents: i32,

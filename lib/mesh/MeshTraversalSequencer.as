@@ -75,7 +75,11 @@ export class MeshTraversalSequencer extends PointsSequencer {
 
         traverser.onTraversalStart();
         let numFaces = traverser.cornerTable().numFaces();
+        // A traversal from a visited face reaches nothing new, so skip its call.
         for (let i = 0; i < numFaces; i++) {
+            if (traverser.isFaceVisited(i)) {
+                continue;
+            }
             if (!traverser.traverseFromCorner(3 * i)) {
                 return false;
             }

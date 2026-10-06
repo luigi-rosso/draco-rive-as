@@ -3,6 +3,7 @@
 // template branch is dropped). VectorD math is unrolled into scalar i64 locals.
 
 import { PointAttribute } from "../attributes/PointAttribute";
+import { MeshPredictionPositionReader } from "./MeshPredictionPositionReader";
 import { MeshPredictionSchemeData } from "./MeshPredictionSchemeData";
 
 export const kTexCoordsNumComponents: i32 = 2;
@@ -36,30 +37,27 @@ function absMax2(a: i64, b: i64): i64 {
 }
 
 export class MeshPredictionSchemeTexCoordsPortablePredictor {
-    private posAttribute: PointAttribute? = null;
-    private entryToPointIdMap: Int32Array = new Int32Array(0);
+    private pos: MeshPredictionPositionReader = new MeshPredictionPositionReader();
     private _predictedValue: Int32Array = new Int32Array(kTexCoordsNumComponents);
     // Decoded UV flips, consumed from the back.
     private orientations: Uint8Array = new Uint8Array(0);
     private numOrientations: i32 = 0;
     private meshData: MeshPredictionSchemeData;
-    // Scratch for position reads.
-    private posVal: Float64Array = new Float64Array(3);
 
     constructor(meshData: MeshPredictionSchemeData) {
         this.meshData = meshData;
     }
 
     setPositionAttribute(positionAttribute: PointAttribute): void {
-        this.posAttribute = positionAttribute;
+        this.pos.attribute = positionAttribute;
     }
 
     setEntryToPointIdMap(map: Int32Array): void {
-        this.entryToPointIdMap = map;
+        this.pos.entryToPointIdMap = map;
     }
 
     isInitialized(): bool {
-        return this.posAttribute != null;
+        return this.pos.attribute != null;
     }
 
     predictedValue(): Int32Array {
@@ -77,15 +75,6 @@ export class MeshPredictionSchemeTexCoordsPortablePredictor {
     resizeOrientations(numOrientations: i32): void {
         this.orientations = new Uint8Array(numOrientations);
         this.numOrientations = numOrientations;
-    }
-
-    // Reads the position for |entryId| into posVal; components are quantized
-    // integers, exactly representable in f64 (matches C++ ConvertValue to
-    // int64).
-    private loadPosition(entryId: i32): void {
-        let pointId = this.entryToPointIdMap[entryId];
-        let att = this.posAttribute!;
-        att.convertValue(<i32>att.mappedIndex(pointId), this.posVal);
     }
 
     // Computes the predicted UV coordinates for |cornerId| into
@@ -117,18 +106,19 @@ export class MeshPredictionSchemeTexCoordsPortablePredictor {
             }
 
             // Positions at all corners.
-            this.loadPosition(dataId);
-            let tipX = <i64>this.posVal[0];
-            let tipY = <i64>this.posVal[1];
-            let tipZ = <i64>this.posVal[2];
-            this.loadPosition(nextDataId);
-            let nextX = <i64>this.posVal[0];
-            let nextY = <i64>this.posVal[1];
-            let nextZ = <i64>this.posVal[2];
-            this.loadPosition(prevDataId);
-            let prevX = <i64>this.posVal[0];
-            let prevY = <i64>this.posVal[1];
-            let prevZ = <i64>this.posVal[2];
+            let pos = this.pos;
+            pos.load(dataId);
+            let tipX = pos.x;
+            let tipY = pos.y;
+            let tipZ = pos.z;
+            pos.load(nextDataId);
+            let nextX = pos.x;
+            let nextY = pos.y;
+            let nextZ = pos.z;
+            pos.load(prevDataId);
+            let prevX = pos.x;
+            let prevY = pos.y;
+            let prevZ = pos.z;
 
             // The triangle above the UV triangle predicts the coordinate on
             // the tip corner C: X is the projection of C onto PN.

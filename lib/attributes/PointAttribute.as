@@ -6,8 +6,8 @@
 //    cannot overload an inherited method, so it is `initValues` here.
 //  * indicesMap() is always a Uint32Array (empty under identity mapping); the
 //    Luau swapped a jsarray in for the identity case but never read it.
-//  * extractTo(TypedArrayClass, n) becomes one concrete method per output
-//    element type.
+//  * extractTo(TypedArrayClass, n) becomes extractRaw, the values in the
+//    stream's own type; the facade converts to floats.
 
 import { GeometryAttribute } from "./GeometryAttribute";
 import { AttributeTransformData } from "./AttributeTransformData";
@@ -66,11 +66,11 @@ export class PointAttribute extends GeometryAttribute {
         return this._numUniqueEntries;
     }
 
-    mappedIndex(pointIndex: i32): u32 {
+    unsafe mappedIndex(pointIndex: i32): u32 {
         if (this._identityMapping) {
             return <u32>pointIndex;
         }
-        return this._indicesMap[pointIndex];
+        return load<u32>(this._indicesMap.dataStart + (<usize>pointIndex << 2));
     }
 
     isMappingIdentity(): bool {
@@ -157,113 +157,28 @@ export class PointAttribute extends GeometryAttribute {
         }
     }
 
-    // Per-component read as f64 for the extract loops (attIndex pre-mapped).
-    private unsafe readComponent(attIndex: i32, component: i32): f64 {
-        let buf = this.buffer;
-        if (buf == null) {
-            return 0;
-        }
-        let base = buf.data().dataStart + <usize>(this.byteOffset + this.byteStride * attIndex);
-        let dt = this.dataType;
-        if (dt == DataType.FLOAT32) {
-            return <f64>load<f32>(base + (<usize>component << 2));
-        } else if (dt == DataType.INT32) {
-            return <f64>load<i32>(base + (<usize>component << 2));
-        } else if (dt == DataType.UINT32) {
-            return <f64>load<u32>(base + (<usize>component << 2));
-        } else if (dt == DataType.INT8) {
-            return <f64>load<i8>(base + <usize>component);
-        } else if (dt == DataType.UINT8) {
-            return <f64>load<u8>(base + <usize>component);
-        } else if (dt == DataType.INT16) {
-            return <f64>load<i16>(base + (<usize>component << 1));
-        } else if (dt == DataType.UINT16) {
-            return <f64>load<u16>(base + (<usize>component << 1));
-        } else if (dt == DataType.FLOAT64) {
-            return load<f64>(base + (<usize>component << 3));
-        }
-        return 0;
-    }
-
     private extractIndex(i: i32): i32 {
         return this._identityMapping ? i : <i32>unchecked(this._indicesMap[i]);
     }
 
-    unsafe extractToFloat32(numPoints: i32): Float32Array {
-        let nc = this.numComponents;
-        let out = new Float32Array(numPoints * nc);
+    // Values in point order, numComponents entries of dataType per point.
+    unsafe extractRaw(numPoints: i32): ArrayBuffer {
+        let entry = dataTypeLength(this.dataType) * this.numComponents;
+        let out = new ArrayBuffer(numPoints * entry);
         let buf = this.buffer;
         if (buf == null || numPoints == 0) {
             return out;
         }
-        if (this.dataType == DataType.FLOAT32) {
-            // Common case: float source, tight or strided copy.
-            let base = buf.data().dataStart + <usize>this.byteOffset;
-            let stride = <usize>this.byteStride;
-            if (this._identityMapping && stride == (<usize>nc << 2)) {
-                memory.copy(out.dataStart, base, <usize>(numPoints * nc) << 2);
-                return out;
-            }
-            let outPtr = out.dataStart;
-            for (let i = 0; i < numPoints; i++) {
-                let src = base + stride * <usize>this.extractIndex(i);
-                for (let j = 0; j < nc; j++) {
-                    store<f32>(outPtr, load<f32>(src + (<usize>j << 2)));
-                    outPtr += 4;
-                }
-            }
+        let base = buf.data().dataStart + <usize>this.byteOffset;
+        let stride = <usize>this.byteStride;
+        let dst = changetype<usize>(out);
+        if (this._identityMapping && stride == <usize>entry) {
+            memory.copy(dst, base, <usize>(numPoints * entry));
             return out;
         }
         for (let i = 0; i < numPoints; i++) {
-            let attIndex = this.extractIndex(i);
-            for (let j = 0; j < nc; j++) {
-                unchecked(out[i * nc + j] = <f32>this.readComponent(attIndex, j));
-            }
-        }
-        return out;
-    }
-
-    extractToInt32(numPoints: i32): Int32Array {
-        let nc = this.numComponents;
-        let out = new Int32Array(numPoints * nc);
-        if (this.buffer == null || numPoints == 0) {
-            return out;
-        }
-        for (let i = 0; i < numPoints; i++) {
-            let attIndex = this.extractIndex(i);
-            for (let j = 0; j < nc; j++) {
-                out[i * nc + j] = <i32>this.readComponent(attIndex, j);
-            }
-        }
-        return out;
-    }
-
-    extractToUint32(numPoints: i32): Uint32Array {
-        let nc = this.numComponents;
-        let out = new Uint32Array(numPoints * nc);
-        if (this.buffer == null || numPoints == 0) {
-            return out;
-        }
-        for (let i = 0; i < numPoints; i++) {
-            let attIndex = this.extractIndex(i);
-            for (let j = 0; j < nc; j++) {
-                out[i * nc + j] = <u32>this.readComponent(attIndex, j);
-            }
-        }
-        return out;
-    }
-
-    extractToUint16(numPoints: i32): Uint16Array {
-        let nc = this.numComponents;
-        let out = new Uint16Array(numPoints * nc);
-        if (this.buffer == null || numPoints == 0) {
-            return out;
-        }
-        for (let i = 0; i < numPoints; i++) {
-            let attIndex = this.extractIndex(i);
-            for (let j = 0; j < nc; j++) {
-                out[i * nc + j] = <u16><u32>this.readComponent(attIndex, j);
-            }
+            memory.copy(dst, base + stride * <usize>this.extractIndex(i), <usize>entry);
+            dst += <usize>entry;
         }
         return out;
     }
